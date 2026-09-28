@@ -465,10 +465,12 @@ V.home = () => {
   return `
   <section class="mini-hero" aria-label="mininote"><div class="mini-title">mininote<span style="color:#c59d64">.</span></div><div class="mini-copy">บันทึกเรื่องเงินเล็ก ๆ<br>ให้ทุกวันเบาสบายขึ้น</div><span class="mini-caption">✦ a little magic in every note</span><div class="mini-art" aria-hidden="true"><svg viewBox="0 0 220 150" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 143C35 113 94 134 122 130c37-6 54-20 95 11" fill="#759c80"/><path d="M146 143V76c0-10 18-11 18 0v67" fill="#f8f4dc" stroke="#658e76" stroke-width="2"/><path d="M143 76h24M146 90h18" stroke="#658e76" stroke-width="2"/><path d="M147 112c6-8 14-9 18 0v31h-18z" fill="#a7ccbe"/><path d="M181 141V99c0-10 25-10 25 0v42" fill="#9cc4bd" stroke="#658e76" stroke-width="2"/><path d="M182 98h23M188 87h11" stroke="#658e76" stroke-width="2"/><path d="M64 143c-3-15-1-29 8-35l-4-24 17 14c9-4 17-4 26 0l17-14-4 27c6 9 7 20 3 32" fill="#263d35"/><circle cx="86" cy="116" r="3" fill="#eee0a9"/><circle cx="111" cy="116" r="3" fill="#eee0a9"/><path d="M96 126l3 2 3-2M15 142c4-34 13-55 31-75M24 113c-12-9-13-16-9-23 10 1 14 8 14 15M37 90c1-14 7-19 16-21 2 12-2 20-13 24M28 125c-13-6-17-11-17-21 11-1 17 5 19 13" stroke="#5c8e68" stroke-width="2"/><path class="mini-leaf" d="M35 144c-4-18-4-27 5-44M39 121c8-14 17-17 23-14-4 10-12 15-23 14" fill="#7dab77" stroke="#5c8e68" stroke-width="2"/><path d="M169 65l5-12 5 12 12 5-12 4-5 12-5-12-12-4z" fill="#f7edc8"/><circle cx="198" cy="38" r="3" fill="#fff5d9"/></svg></div></section>
   <div class="hdr">
-    <div class="bal" onclick="toggleBal()"><small>เงินที่มี ${hide?'👁️‍🗨️':'👁️'}</small><b>${hide?'฿ ••••••':fmt(liquid)}</b>${debt<0&&!hide?`<div class="small red">หนี้บัตร ${fmt(-debt)}</div>`:''}</div>
+    <div class="bal"><small><span onclick="toggleBal()" style="cursor:pointer">เงินที่มี ${hide?'👁️‍🗨️':'👁️'}</span> · <a onclick="openBalances()">✏️ ปรับยอด</a></small><b onclick="openBalances()" style="cursor:pointer">${hide?'฿ ••••••':fmt(liquid)}</b>${debt<0&&!hide?`<div class="small red">หนี้บัตร ${fmt(-debt)}</div>`:''}</div>
     <button class="ib" onclick="go('tray')" aria-label="ถาดตรวจสอบ">📥${S.tray.length?`<i class="bdg">${S.tray.length}</i>`:''}</button>
     <button class="ib" onclick="go('settings')" aria-label="ตั้งค่า">⚙️</button>
   </div>
+
+  ${!S.settings.balSet && S.accs.every(a => !+a.open) ? `<div class="card tap" onclick="openBalances()" style="background:var(--pri2)"><div class="row"><span class="emo">💰</span><div class="f1"><b>ตั้งยอดเงินตอนนี้ก่อนเริ่มใช้</b><div class="small mut">ใส่ว่าแต่ละบัญชีมีเงินอยู่เท่าไหร่ "เงินที่มี" จะได้ตรงกับความจริง</div></div><span>›</span></div></div>` : ''}
 
   ${S.tray.length ? `<div class="card tap" onclick="go('tray')" style="background:var(--amb2)"><div class="row"><span class="emo">📥</span><div class="f1"><b>รอตรวจสอบ ${S.tray.length} รายการ</b><div class="small mut">AI จดให้แล้ว แตะเพื่อยืนยันก่อนบันทึกจริง</div></div><span>›</span></div></div>` : ''}
 
@@ -544,6 +546,7 @@ V.more = () => `
 V.accounts = () => {
   const norm = S.accs.filter(a => a.type!=='card'), cs = cards();
   return `${hdr('บัญชี & บัตร','more')}
+  <button class="btn ghost" style="width:100%;margin-bottom:4px" onclick="openBalances()">✏️ ปรับยอดเงินทุกบัญชีให้ตรงกับจริง</button>
   <div class="sec-t"><b>บัญชี / กระเป๋าเงิน</b><a class="small" onclick="openAcc()">+ เพิ่ม</a></div>
   <div class="list">${norm.map(a => `<div class="it" onclick="openAcc('${a.id}')"><span class="emo">${a.icon||'💰'}</span><div class="f1"><div class="t">${esc(a.name)}</div><div class="s">${ACC_T[a.type]||''}${S.settings.defaultAcc===a.id?' · ค่าเริ่มต้น':''}</div></div><div class="r"><b>${fmt(accBal(a.id))}</b></div></div>`).join('') || '<div class="empty">ยังไม่มีบัญชี</div>'}</div>
   <div class="sec-t"><b>บัตรเครดิต</b><a class="small" onclick="openAcc(null,'card')">+ เพิ่มบัตร</a></div>
@@ -675,6 +678,26 @@ V.group = () => {
    ACTIONS
    ============================================================ */
 function toggleBal(){ S.settings.hideBal = !S.settings.hideBal; save(); render(); }
+// ตั้ง/ปรับยอดเงิน: ใส่ยอดจริงตอนนี้ → แอปคำนวณยอดเริ่มต้นย้อนให้ (รายการที่จดไว้แล้วไม่เปลี่ยน)
+function openBalances(){
+  const row = a => { const isC = a.type==='card', v = accBal(a.id), shown = isC ? -v : v;
+    return `<div class="row" style="margin-bottom:8px"><span class="emo">${a.icon||'💰'}</span><div class="f1"><div class="t">${esc(a.name)}</div><div class="small mut">${isC?'ยอดค้างชำระตอนนี้':ACC_T[a.type]||''}</div></div><input class="search" style="width:130px;margin:0;text-align:right" inputmode="decimal" data-bal="${a.id}" value="${shown?r2(shown):''}" placeholder="0.00"></div>`; };
+  const norm = S.accs.filter(a => a.type!=='card'), cs = S.accs.filter(a => a.type==='card');
+  sheet(`<div class="sh-h"><b>💰 ยอดเงินตอนนี้</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <div class="note">ใส่ยอดที่มีจริงตอนนี้ของแต่ละบัญชี (ดูจากแอปธนาคาร/กระเป๋า) — รายการที่จดไว้แล้วไม่หาย แอปจะปรับยอดเริ่มต้นให้ตรงเอง</div>
+  ${norm.map(row).join('')}
+  ${cs.length ? `<div class="small mut" style="margin:10px 0 6px">💳 บัตรเครดิต</div>${cs.map(row).join('')}` : ''}
+  <a class="small" onclick="closeSheet();openAcc()">+ เพิ่มบัญชี</a>
+  <div class="btns"><button class="btn pri f1" onclick="saveBalances()">บันทึกยอด</button></div>`);
+}
+function saveBalances(){
+  document.querySelectorAll('[data-bal]').forEach(inp => {
+    const a = acc(inp.dataset.bal); if (!a) return;
+    const want = parseAmt(inp.value) * (a.type==='card' ? -1 : 1);
+    a.open = r2((+a.open||0) + want - accBal(a.id));
+  });
+  S.settings.balSet = true; save(); closeSheet(); render(); toast('ปรับยอดเงินแล้ว');
+}
 function setS(k, v, type){ if (type==='number') v = +v || 0; if (k==='cycleDay') v = Math.min(31, Math.max(1, Math.round(v))); S.settings[k] = typeof v==='string' ? v.trim() : v; save(); if (k==='theme') applyTheme(); toast('บันทึกแล้ว', 1000); }
 
 /* ---------- add menu ---------- */
