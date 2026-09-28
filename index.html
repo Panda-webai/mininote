@@ -1,0 +1,1274 @@
+<!doctype html>
+<html lang="th" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>mininote — บันทึกเรื่องเงินอย่างน่ารัก</title>
+<meta name="description" content="จดรายรับรายจ่ายส่วนตัว ให้ AI จดให้">
+<meta name="theme-color" content="#708f78">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="mininote">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f6f1;--card:#ffffff;--ink:#1b2a22;--mut:#6b7a70;--line:#e3e8e0;--soft:#eef2ec;
+  --pri:#2f7d57;--pri-ink:#ffffff;--pri2:#e4f1e9;--red:#d14343;--grn:#1f8f50;--amb:#c28316;--amb2:#fbf1dc;
+  --shadow:0 1px 2px rgba(20,40,30,.06),0 4px 16px rgba(20,40,30,.05);
+  --r:16px;
+}
+:root[data-theme="dark"]{
+  --bg:#0f1512;--card:#18211c;--ink:#e6eee8;--mut:#91a298;--line:#27332c;--soft:#1f2a24;
+  --pri:#4cb07f;--pri-ink:#0b1a12;--pri2:#1b3226;--red:#ef6b6b;--grn:#4cc07f;--amb:#e0a53c;--amb2:#2e2616;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+}
+@media (prefers-color-scheme:dark){
+  :root[data-theme="auto"]{
+    --bg:#0f1512;--card:#18211c;--ink:#e6eee8;--mut:#91a298;--line:#27332c;--soft:#1f2a24;
+    --pri:#4cb07f;--pri-ink:#0b1a12;--pri2:#1b3226;--red:#ef6b6b;--grn:#4cc07f;--amb:#e0a53c;--amb2:#2e2616;
+    --shadow:0 1px 2px rgba(0,0,0,.3);
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.45}
+body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{font-size:16px}
+a{color:var(--pri);text-decoration:none;cursor:pointer}
+#app{max-width:560px;margin:0 auto;padding:calc(10px + env(safe-area-inset-top)) 16px 16px}
+.hdr{display:flex;align-items:center;gap:10px;margin:4px 0 14px}
+.hdr h1{font-size:20px;margin:0;flex:1}
+.hdr .back{border:0;background:var(--card);box-shadow:var(--shadow);width:38px;height:38px;border-radius:12px;font-size:18px;cursor:pointer}
+.bal{flex:1;cursor:pointer}
+.bal small{display:block;color:var(--mut);font-size:12px}
+.bal b{font-size:22px;letter-spacing:-.3px}
+.ib{position:relative;border:0;background:var(--card);box-shadow:var(--shadow);width:40px;height:40px;border-radius:12px;font-size:18px;cursor:pointer}
+.bdg{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-style:normal;font-size:11px;min-width:18px;height:18px;border-radius:9px;display:grid;place-items:center;padding:0 4px;font-weight:600}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px;margin-bottom:12px}
+.card.tap{cursor:pointer}
+.card h3{margin:0 0 8px;font-size:15px}
+.row{display:flex;align-items:center;gap:10px}
+.sb{justify-content:space-between}
+.f1{flex:1;min-width:0}
+.mut{color:var(--mut)}
+.small{font-size:12.5px}
+.red{color:var(--red)}
+.grn{color:var(--grn)}
+.amb{color:var(--amb)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.big{font-size:22px;font-weight:700;letter-spacing:-.3px}
+.bar{height:8px;background:var(--soft);border-radius:8px;overflow:hidden;margin:10px 0 6px}
+.bar i{display:block;height:100%;border-radius:8px}
+.leftbox{display:flex;justify-content:space-between;align-items:center;background:var(--pri2);border-radius:12px;padding:10px 12px;margin:10px 0 6px}
+.leftbox .amt{font-size:20px;font-weight:700;color:var(--pri);white-space:nowrap;flex:none;margin-left:8px}
+.leftbox.neg{background:#fde8e8}
+:root[data-theme="dark"] .leftbox.neg{background:#3a1d1d}
+@media (prefers-color-scheme:dark){:root[data-theme="auto"] .leftbox.neg{background:#3a1d1d}}
+.leftbox.neg .amt{color:var(--red)}
+.emo{font-size:22px;width:36px;height:36px;border-radius:11px;background:var(--soft);display:grid;place-items:center;flex:none}
+.sec-t{display:flex;justify-content:space-between;align-items:baseline;margin:18px 2px 8px}
+.sec-t b{font-size:14px}
+.list{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px}
+.it{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+.it:last-child{border-bottom:0}
+.it .t{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it .s{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it .r{text-align:right;flex:none}
+.it .r b{font-weight:600}
+.rw{font-size:11px;color:var(--grn);display:block}
+.dhead{font-size:12px;color:var(--mut);padding:8px 14px;background:var(--soft);display:flex;justify-content:space-between}
+.empty{text-align:center;color:var(--mut);padding:24px 12px}
+.pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--soft);color:var(--mut)}
+.pill.warn{background:var(--amb2);color:var(--amb)}
+.pill.bad{background:#fde8e8;color:var(--red)}
+.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:600;cursor:pointer;background:var(--soft)}
+.btn.pri{background:var(--pri);color:var(--pri-ink)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.red{color:var(--red)}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:10px}
+.btns{display:flex;gap:10px;margin-top:14px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--card);box-shadow:var(--shadow);border-radius:14px;padding:14px;cursor:pointer;border:0;text-align:left}
+.tile .e{font-size:24px}
+.tile b{display:block;margin-top:6px;font-size:14px}
+.tile span{font-size:12px;color:var(--mut)}
+/* tabbar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom));display:flex;justify-content:center;z-index:20}
+.tabbar .in{max-width:560px;width:100%;display:flex;justify-content:space-around;align-items:center}
+.tab{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--mut);padding:4px 8px;cursor:pointer;min-width:56px}
+.tab svg{width:22px;height:22px}
+.tab.on{color:var(--pri);font-weight:600}
+.fab{width:54px;height:54px;border-radius:50%;border:0;background:var(--pri);color:var(--pri-ink);font-size:30px;line-height:1;box-shadow:0 6px 18px rgba(47,125,87,.35);margin-top:-22px;cursor:pointer}
+/* sheet */
+.sw{position:fixed;inset:0;background:rgba(10,20,15,.45);display:none;z-index:40;align-items:flex-end;justify-content:center}
+.sw.on{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));animation:up .22s ease}
+@keyframes up{from{transform:translateY(40px);opacity:.5}to{transform:none;opacity:1}}
+.sh-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sh-h b{font-size:17px}
+.x{border:0;background:var(--soft);width:34px;height:34px;border-radius:50%;cursor:pointer}
+.seg{display:flex;background:var(--soft);border-radius:12px;padding:3px;margin-bottom:12px}
+.seg button{flex:1;border:0;background:none;padding:8px;border-radius:10px;cursor:pointer;color:var(--mut)}
+.seg button.on{background:var(--card);color:var(--ink);font-weight:600;box-shadow:var(--shadow)}
+.amtw{display:flex;align-items:center;background:var(--card);border-radius:14px;padding:6px 14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.amtw span{font-size:26px;color:var(--mut);margin-right:6px}
+.amtw input{border:0;background:none;outline:none;font-size:32px;font-weight:700;width:100%;padding:4px 0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:6px 11px;font-size:13.5px;cursor:pointer}
+.chip.on{background:var(--pri);border-color:var(--pri);color:var(--pri-ink)}
+.fl{display:block;font-size:12.5px;color:var(--mut);margin-bottom:10px}
+.fl input,.fl select,.fl textarea{display:block;width:100%;margin-top:4px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--ink);outline:none}
+.fl input:focus,.fl select:focus,.fl textarea:focus{border-color:var(--pri)}
+.hint{font-size:13px;border-radius:12px;background:var(--amb2);padding:9px 12px;display:none}
+.hint.on{display:block}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.menu button{border:0;background:var(--card);box-shadow:var(--shadow);border-radius:14px;padding:14px 12px;text-align:left;cursor:pointer}
+.menu button .e{font-size:22px;display:block}
+.menu button b{display:block;font-size:14px;margin-top:4px}
+.menu button span{font-size:12px;color:var(--mut)}
+.menu .wide{grid-column:1/-1}
+.cat-bar{display:flex;align-items:center;gap:10px;padding:8px 0}
+.cat-bar .bb{flex:1;height:8px;background:var(--soft);border-radius:6px;overflow:hidden}
+.cat-bar .bb i{display:block;height:100%;background:var(--pri);border-radius:6px}
+.chart{width:100%;height:auto;display:block}
+.rank{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.rank:last-child{border-bottom:0}
+.rank .n{width:26px;height:26px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
+.rank.top .n{background:var(--pri);color:var(--pri-ink)}
+.qr{background:#fff;padding:12px;border-radius:14px;display:flex;justify-content:center;margin:10px auto;max-width:260px}
+.qr svg,.qr img{width:100%;height:auto}
+.rule{display:grid;grid-template-columns:90px 1fr 70px 30px;gap:6px;align-items:center;margin-bottom:6px}
+.rule select,.rule input{padding:8px;border:1px solid var(--line);border-radius:9px;background:var(--card);width:100%;font-size:14px}
+.rule button{border:0;background:none;color:var(--red);font-size:18px;cursor:pointer}
+.mem{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:5px 10px;margin:0 6px 6px 0;font-size:13.5px}
+.chk{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:14px}
+.chk input{width:18px;height:18px;accent-color:var(--pri)}
+#toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:#1b2a22;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:.2s;z-index:60;max-width:90vw;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%)}
+#busy{position:fixed;inset:0;background:rgba(10,20,15,.5);display:none;place-items:center;z-index:70}
+#busy.on{display:grid}
+#busy div{background:var(--card);padding:18px 22px;border-radius:16px;display:flex;align-items:center;gap:12px;max-width:80vw}
+.spin{width:22px;height:22px;border:3px solid var(--soft);border-top-color:var(--pri);border-radius:50%;animation:sp 0.8s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+.mic{width:64px;height:64px;border-radius:50%;border:0;background:var(--pri);color:var(--pri-ink);font-size:28px;cursor:pointer;display:block;margin:6px auto}
+.mic.on{background:var(--red);animation:pl 1.2s infinite}
+@keyframes pl{50%{box-shadow:0 0 0 10px rgba(209,67,67,.18)}}
+.search{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:10px;outline:none}
+.per{display:flex;align-items:center;justify-content:space-between;background:var(--card);box-shadow:var(--shadow);border-radius:14px;padding:6px;margin-bottom:10px}
+.per button{border:0;background:var(--soft);width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:16px}
+.per button:disabled{opacity:.35}
+.kv{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
+code{background:var(--soft);padding:1px 5px;border-radius:5px;font-size:13px}
+.note{font-size:12.5px;color:var(--mut);background:var(--soft);border-radius:10px;padding:8px 10px;margin:6px 0 10px}
+
+/* mininote · a quiet enchanted garden */
+:root{--bg:#f4f2e8;--card:#fffdf5;--ink:#263d35;--mut:#718379;--line:#dbe4d8;--soft:#e9efe3;--pri:#658e76;--pri-ink:#fffdf5;--pri2:#dcebdc;--red:#b86d68;--grn:#438570;--amb:#ae8545;--amb2:#f7edda;--shadow:0 3px 8px rgba(35,65,53,.035),0 16px 38px rgba(35,65,53,.065);--r:22px}
+:root[data-theme="dark"]{--bg:#172923;--card:#21372e;--ink:#f5f2e4;--mut:#acbfb0;--line:#395548;--soft:#2e493c;--pri:#9bc1a5;--pri-ink:#183027;--pri2:#345546;--red:#e49b91;--grn:#a8d3af;--amb:#e1bc7f;--amb2:#4a4130;--shadow:0 12px 32px rgba(0,0,0,.14)}
+@media(prefers-color-scheme:dark){:root[data-theme="auto"]{--bg:#172923;--card:#21372e;--ink:#f5f2e4;--mut:#acbfb0;--line:#395548;--soft:#2e493c;--pri:#9bc1a5;--pri-ink:#183027;--pri2:#345546;--red:#e49b91;--grn:#a8d3af;--amb:#e1bc7f;--amb2:#4a4130;--shadow:0 12px 32px rgba(0,0,0,.14)}}
+html,body{background:var(--bg)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.48;background:radial-gradient(circle at 12% 10%,#f3dca7 0,transparent 30%),radial-gradient(circle at 88% 36%,#c9e8d9 0,transparent 28%),radial-gradient(circle at 14% 86%,#d9e7c6 0,transparent 31%)}
+#app{position:relative;z-index:1;padding-top:calc(16px + env(safe-area-inset-top))}
+.card,.list,.tile,.menu button,.per{border:1px solid var(--line);box-shadow:var(--shadow)}
+.card{padding:18px}.card.tap,.tile,.menu button,.ib,.btn,.fab,.tab{transition:transform .22s ease,box-shadow .22s ease,background .22s ease}
+.card.tap:hover,.tile:hover,.menu button:hover{transform:translateY(-3px);box-shadow:0 15px 28px rgba(42,85,62,.12)}
+.card h3,.sec-t b,.hdr h1{letter-spacing:-.025em}
+.hdr{margin-bottom:18px}.hdr h1{font-size:22px}.hdr .back,.ib{border:1px solid var(--line);border-radius:14px}
+.bal small{letter-spacing:.02em}.bal b{font-size:26px;letter-spacing:-.06em}
+.big{font-size:25px;letter-spacing:-.06em}
+.emo{background:linear-gradient(145deg,#e3efe4,#f7ecd7);border:1px solid rgba(86,136,103,.12);border-radius:13px}
+.leftbox{border-radius:16px;border:1px solid rgba(96,148,109,.14)}
+.btn,.tile,.menu button{border-radius:16px}.btn.pri,.fab,.chip.on{background:linear-gradient(145deg,#7ea989,#557b6b)}
+.tabbar{background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(20px);border-top:1px solid var(--line)}
+.tab.on svg{filter:drop-shadow(0 3px 5px rgba(70,133,93,.25))}.tab:hover,.fab:hover,.btn:hover{transform:translateY(-2px)}
+.fab{box-shadow:0 8px 22px rgba(69,118,87,.3);border:4px solid var(--card)}
+.sheet{border:1px solid var(--line);box-shadow:0 -22px 60px rgba(21,56,41,.16)}
+:focus-visible{outline:3px solid #8ab6a0;outline-offset:2px}
+.mini-hero{position:relative;isolation:isolate;overflow:hidden;min-height:175px;border-radius:25px;padding:22px 21px;margin:0 0 14px;background:linear-gradient(115deg,#d4e8d6 0%,#e9eddb 56%,#f8e5c7 100%);border:1px solid #cfdfcc;box-shadow:0 15px 30px rgba(60,100,75,.10)}
+.mini-hero:before{content:"";position:absolute;inset:0;z-index:-1;opacity:.35;background-image:radial-gradient(#fff 1px,transparent 1px);background-size:15px 15px}
+.mini-hero:after{content:"✦";position:absolute;top:15px;right:24px;color:#fff7db;font-size:25px;animation:twinkle 3.5s ease-in-out infinite}
+.mini-title{font:normal 38px/1 'DM Serif Display',Georgia,serif;color:#274d43;letter-spacing:-.03em;margin-bottom:10px}.mini-copy{font-size:13px;color:#426b57;max-width:53%;line-height:1.6}.mini-caption{display:inline-block;margin-top:13px;padding:5px 11px;border-radius:99px;background:rgba(255,253,239,.7);font-size:11px;color:#58755c}
+.mini-art{position:absolute;right:4px;bottom:-5px;width:49%;height:145px;filter:drop-shadow(0 8px 5px rgba(54,91,65,.12))}.mini-art svg{width:100%;height:100%}.mini-leaf{transform-origin:bottom center;animation:leaf 5s ease-in-out infinite alternate}
+@keyframes leaf{to{transform:rotate(5deg)}}@keyframes twinkle{50%{opacity:.3;transform:scale(.7)}}
+@media(max-width:360px){.mini-title{font-size:32px}.mini-copy{max-width:57%}.mini-art{width:45%}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<nav class="tabbar"><div class="in">
+  <button class="tab" data-v="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>หน้าหลัก</button>
+  <button class="tab" data-v="list" onclick="go('list')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>รายการ</button>
+  <button class="fab" onclick="openAdd()" aria-label="จดรายการ">+</button>
+  <button class="tab" data-v="split" onclick="go('split')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c1.8.8 3 2.6 3.5 5.2"/></svg>หารบิล</button>
+  <button class="tab" data-v="more" onclick="go('more')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>เพิ่มเติม</button>
+</div></nav>
+
+<div class="sw" id="sw" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div>
+<div id="toast"></div>
+<div id="busy"><div><i class="spin"></i><span>กำลังทำงาน…</span></div></div>
+<input type="file" id="fCam" accept="image/*" capture="environment" hidden onchange="onImgs(this)">
+<input type="file" id="fImg" accept="image/*" multiple hidden onchange="onImgs(this)">
+<input type="file" id="fQR" accept="image/*" hidden onchange="onQR(this)">
+<input type="file" id="fRestore" accept=".json,application/json" hidden onchange="onRestore(this)">
+
+<script>
+/* ============================================================
+   จดหน่อย (JodNoi) — แอปจดรายรับรายจ่ายส่วนตัว
+   ข้อมูลทั้งหมดเก็บใน localStorage ของเครื่องนี้เท่านั้น
+   ============================================================ */
+const KEY = 'jodnoi.v1';
+const LIB_QRGEN = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
+const LIB_JSQR  = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+
+const CATS0 = [
+  ['food','อาหาร','🍜','expense'],['drink','เครื่องดื่ม','☕','expense'],['grocery','ของใช้/ซูเปอร์','🛒','expense'],
+  ['travel','เดินทาง','🚕','expense'],['fuel','น้ำมัน/ชาร์จ','⛽','expense'],['shop','ช้อปปิ้ง','🛍️','expense'],
+  ['bill','บิล/ค่าบริการ','🧾','expense'],['home','ที่พัก','🏠','expense'],['health','สุขภาพ','💊','expense'],
+  ['fun','บันเทิง','🎬','expense'],['edu','การศึกษา','📚','expense'],['gift','ให้/ทำบุญ','🎁','expense'],
+  ['other','อื่นๆ','📦','expense'],
+  ['salary','เงินเดือน','💼','income'],['bonus','โบนัส','🎉','income'],['sell','ขายของ','💰','income'],
+  ['refund','เงินคืน','↩️','income'],['oinc','รายรับอื่น','➕','income']
+].map(([id,name,icon,type]) => ({id,name,icon,type}));
+
+const KW = {
+  food:'ข้าว ก๋วยเตี๋ยว ส้มตำ หมู ไก่ อาหาร กิน ผัด ต้ม แกง ราเมง ซูชิ พิซซ่า kfc mcdonald burger ชาบู หมูกระทะ บุฟเฟ่ต์ ขนม grabfood lineman foodpanda robinhood สุกี้ โจ๊ก',
+  drink:'กาแฟ ชา นม cafe café coffee starbucks amazon ชานม ไข่มุก โกโก้ เบียร์ เหล้า น้ำดื่ม น้ำปั่น',
+  grocery:'7-11 เซเว่น 7-eleven lotus โลตัส บิ๊กซี bigc big c makro แม็คโคร tops villa ซูเปอร์ ของใช้ familymart แฟมิลี่มาร์ท',
+  travel:'bts mrt แท็กซี่ taxi grab bolt วิน มอไซ ค่ารถ ทางด่วน easy pass ตั๋ว เครื่องบิน airasia รถเมล์ ที่จอดรถ',
+  fuel:'น้ำมัน ปตท ptt pt shell เชลล์ บางจาก caltex esso ชาร์จรถ ev',
+  shop:'shopee ช้อปปี้ lazada ลาซาด้า tiktok central เซ็นทรัล robinson โรบินสัน uniqlo เสื้อ รองเท้า กระเป๋า',
+  bill:'ค่าไฟ ค่าน้ำ ค่าเน็ต ais true dtac netflix spotify youtube icloud บิล ประกัน ค่าโทร chatgpt claude',
+  home:'ค่าเช่า ค่าหอ คอนโด ค่าห้อง ผ่อนบ้าน ส่วนกลาง',
+  health:'ยา หมอ โรงพยาบาล คลินิก ทำฟัน ฟิตเนส gym ร้านยา',
+  fun:'หนัง major sf เกม คอนเสิร์ต เที่ยว steam ตั๋วหนัง',
+  edu:'หนังสือ คอร์ส ค่าเรียน',
+  gift:'ทำบุญ ของขวัญ ให้แม่ ให้พ่อ ซองงาน บริจาค'
+};
+const TL = {expense:'รายจ่าย', income:'รายรับ', transfer:'โอน/จ่ายบัตร'};
+const ACC_T = {cash:'เงินสด', bank:'บัญชีธนาคาร', wallet:'e-Wallet', card:'บัตรเครดิต'};
+
+function defaults(){
+  return {
+    v:1,
+    settings:{budget:15000,cycleDay:1,defaultAcc:'cash',ai:'gemini',geminiKey:'',geminiModel:'gemini-2.5-flash',
+      claudeKey:'',claudeModel:'claude-haiku-4-5',myName:'ฉัน',promptpay:'',hideBal:false,theme:'auto'},
+    cats:CATS0.map(c=>({...c})),
+    accs:[{id:'cash',name:'เงินสด',type:'cash',icon:'💵',open:0},{id:'bank',name:'บัญชีธนาคาร',type:'bank',icon:'🏦',open:0},{id:'wallet',name:'e-Wallet',type:'wallet',icon:'📱',open:0}],
+    tx:[], tray:[], bills:[], paid:{}, groups:[]
+  };
+}
+let S;
+try { S = JSON.parse(localStorage.getItem(KEY)); } catch(e) { S = null; }
+if (!S || !S.v) S = defaults();
+S.settings = {...defaults().settings, ...S.settings};
+['cats','accs','tx','tray','bills','groups'].forEach(k => { if (!Array.isArray(S[k])) S[k] = defaults()[k]; });
+if (!S.paid) S.paid = {};
+
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) { toast('บันทึกไม่สำเร็จ — พื้นที่เก็บข้อมูลอาจเต็ม'); } }
+
+/* ---------- utils ---------- */
+const $ = s => document.querySelector(s);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sum = a => a.reduce((s,x) => s + (+x.amount||0), 0);
+const r2 = n => Math.round(n*100)/100;
+const fmt = n => (n<0?'-':'') + '฿' + Math.abs(n).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt0 = n => (n<0?'-':'') + '฿' + Math.abs(Math.round(n)).toLocaleString('th-TH');
+const pad = n => String(n).padStart(2,'0');
+const ds = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+const pd = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); };
+const today = () => ds(new Date());
+const nowTime = () => { const d=new Date(); return pad(d.getHours())+':'+pad(d.getMinutes()); };
+const addD = (s,n) => { const d=pd(s); d.setDate(d.getDate()+n); return ds(d); };
+const dim = (y,m) => new Date(y,m+1,0).getDate();
+const mk = (y,m,d) => { const t=new Date(y,m,1); return new Date(t.getFullYear(), t.getMonth(), Math.min(d, dim(t.getFullYear(), t.getMonth()))); };
+const diffD = (a,b) => Math.round((pd(b)-pd(a))/864e5);
+const thD = s => pd(s).toLocaleDateString('th-TH',{day:'numeric',month:'short'});
+const thDF = s => pd(s).toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'2-digit'});
+const cat = id => S.cats.find(c => c.id===id) || {id, name:'อื่นๆ', icon:'📦'};
+const acc = id => S.accs.find(a => a.id===id);
+const cards = () => S.accs.filter(a => a.type==='card' && a.card);
+const firstCat = t => (S.cats.find(c => c.type===(t==='income'?'income':'expense'))||{}).id || '';
+function parseAmt(v){
+  v = String(v ?? '').replace(/,/g,'').trim();
+  if (!v) return 0;
+  if (/^[\d.+\-*/() ]+$/.test(v)) { try { const n = Function('"use strict";return ('+v+')')(); return isFinite(n) ? r2(n) : 0; } catch(e) { return 0; } }
+  return r2(parseFloat(v) || 0);
+}
+function toast(m, ms=2400){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'), ms); }
+function busy(m){ const b=$('#busy'); if (m) { b.querySelector('span').textContent=m; b.classList.add('on'); } else b.classList.remove('on'); }
+function sheet(html){ $('#sheet').innerHTML=html; $('#sw').classList.add('on'); }
+function closeSheet(){ $('#sw').classList.remove('on'); $('#sheet').innerHTML=''; }
+function loadScript(src){ return new Promise((res,rej) => { if (document.querySelector(`script[src="${src}"]`)) return res(); const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('โหลดไลบรารีไม่ได้ (ต้องต่อเน็ตครั้งแรก)')); document.head.appendChild(s); }); }
+function download(name, text, type){ const b=new Blob([text],{type}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();}, 500); }
+function applyTheme(){ document.documentElement.dataset.theme = S.settings.theme || 'auto'; }
+
+/* ---------- cycles ---------- */
+// รอบเงินเดือน: เริ่มวันที่ cycleDay ของทุกเดือน
+function bCycle(ref){
+  const d = pd(ref), s = +S.settings.cycleDay || 1;
+  let st = mk(d.getFullYear(), d.getMonth(), s);
+  if (st > d) st = mk(d.getFullYear(), d.getMonth()-1, s);
+  const nx = mk(st.getFullYear(), st.getMonth()+1, s); nx.setDate(nx.getDate()-1);
+  return {start: ds(st), end: ds(nx)};
+}
+function cycleByOff(off){ let c = bCycle(today()); for (let i=0;i<off;i++) c = bCycle(addD(c.start,-1)); return c; }
+const inR = (x,c) => x.date >= c.start && x.date <= c.end;
+const cycLabel = c => thD(c.start) + ' – ' + thD(c.end);
+
+// รอบบัตร: ตัดรอบวันที่ cut
+function cCycle(card, ref){
+  const d = pd(ref), c = +card.cut || 25;
+  let en = mk(d.getFullYear(), d.getMonth(), c);
+  if (en < d) en = mk(d.getFullYear(), d.getMonth()+1, c);
+  const st = mk(en.getFullYear(), en.getMonth()-1, c); st.setDate(st.getDate()+1);
+  return {start: ds(st), end: ds(en)};
+}
+function cardStatus(a){
+  const t = today(), cur = cCycle(a.card, t), lastEnd = addD(cur.start, -1), last = cCycle(a.card, lastEnd);
+  const le = pd(lastEnd), dd = +a.card.due || 10;
+  let due = mk(le.getFullYear(), le.getMonth(), dd); if (due <= le) due = mk(le.getFullYear(), le.getMonth()+1, dd);
+  const charges = (p,q) => sum(S.tx.filter(x => x.acc===a.id && x.type==='expense' && x.date>=p && x.date<=q)) - sum(S.tx.filter(x => x.acc===a.id && x.type==='income' && x.date>=p && x.date<=q));
+  const stmt = Math.max(0, charges(last.start, last.end));
+  const paid = sum(S.tx.filter(x => x.type==='transfer' && x.to===a.id && x.date > lastEnd));
+  return {cur, last, stmt, paid, remain: Math.max(0, r2(stmt-paid)), due: ds(due), unbilled: charges(cur.start, cur.end)};
+}
+function accBal(id){
+  const a = acc(id); if (!a) return 0;
+  let b = +a.open || 0;
+  for (const x of S.tx) {
+    if (x.type==='income' && x.acc===id) b += x.amount;
+    else if (x.type==='expense' && x.acc===id) b -= x.amount;
+    else if (x.type==='transfer') { if (x.acc===id) b -= x.amount; if (x.to===id) b += x.amount; }
+  }
+  return r2(b);
+}
+
+/* ---------- rewards (บัตรไหนคุ้ม) ---------- */
+function rRate(a, catId, mer){
+  const c = a.card; let best = {rate:+c.base||0, why:'อัตราพื้นฐาน'};
+  const m = (mer||'').toLowerCase();
+  for (const r of (c.rules||[])) {
+    let ok = false;
+    if (r.kind==='cat') ok = r.val===catId;
+    else ok = !!r.val && r.val.split(',').some(k => k.trim() && m.includes(k.trim().toLowerCase()));
+    if (ok && +r.rate > best.rate) best = {rate:+r.rate, why: r.kind==='cat' ? 'หมวด'+cat(r.val).name : 'ร้าน '+r.val};
+  }
+  return best;
+}
+function rVal(c, amt, rate){ return c.rtype==='points' ? Math.floor(amt/(+c.per||25)) * rate * (+c.pv||0) : amt*rate/100; }
+function rLabel(c, rate){ return c.rtype==='points' ? `x${rate} แต้ม` : `${rate}%`; }
+function capUsed(a){
+  const cy = cCycle(a.card, today());
+  return S.tx.filter(x => x.acc===a.id && x.type==='expense' && inR(x,cy)).reduce((s,x) => s + rVal(a.card, x.amount, rRate(a,x.cat,x.merchant).rate), 0);
+}
+function advise(amt, catId, mer){
+  return cards().map(a => {
+    const {rate, why} = rRate(a, catId, mer);
+    const raw = rVal(a.card, amt, rate), cap = +a.card.cap || 0;
+    const used = cap ? Math.min(capUsed(a), cap) : 0;
+    const val = cap ? Math.min(raw, Math.max(0, cap-used)) : raw;
+    return {a, rate, why, raw, val: r2(val), capped: cap && raw > val + 0.004, capLeft: cap ? r2(cap-used) : null, pct: amt ? val/amt*100 : 0};
+  }).sort((x,y) => y.val - x.val || y.pct - x.pct);
+}
+function txReward(x){
+  const a = acc(x.acc); if (!a || a.type!=='card' || !a.card || x.type!=='expense') return 0;
+  return r2(rVal(a.card, x.amount, rRate(a, x.cat, x.merchant).rate));
+}
+
+/* ---------- navigation ---------- */
+let VIEW = 'home', VP = {};
+function go(v, p){ VIEW = v; VP = p || {}; render(); window.scrollTo(0,0); }
+function render(){
+  applyTheme();
+  const f = V[VIEW] || V.home;
+  $('#app').innerHTML = f();
+  const tabOf = {home:'home',tray:'home',list:'list',split:'split',group:'split'}[VIEW] || 'more';
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.v===tabOf));
+}
+const hdr = (title, back='home') => `<div class="hdr"><button class="back" onclick="go('${back}')">‹</button><h1>${title}</h1></div>`;
+
+/* ---------- row renderers ---------- */
+function txRow(x){
+  const c = cat(x.cat), a = acc(x.acc), rw = txReward(x);
+  let icon = c.icon, title = x.merchant || c.name, sub = (a ? a.name : '') + (x.note ? ' · ' + x.note : '');
+  if (x.type==='transfer') { const b = acc(x.to); icon='↔️'; title = x.merchant || ('โอน → ' + (b?b.name:'?')); sub = (a?a.name:'?') + ' → ' + (b?b.name:'?'); }
+  const cls = x.type==='income' ? 'grn' : x.type==='transfer' ? 'mut' : '';
+  const sign = x.type==='income' ? '+' : x.type==='transfer' ? '' : '-';
+  return `<div class="it" onclick="editTx('${x.id}')"><span class="emo">${icon}</span><div class="f1"><div class="t">${esc(title)}</div><div class="s">${esc(sub)}${x.time?' · '+x.time:''}</div></div><div class="r"><b class="${cls}">${sign}${fmt(x.amount).replace('-','')}</b>${rw>0?`<span class="rw">+${fmt(rw)} คืน</span>`:''}</div></div>`;
+}
+function sortTx(a){ return a.slice().sort((p,q) => (q.date+(q.time||'')).localeCompare(p.date+(p.time||'')) || (q.created||0)-(p.created||0)); }
+function grouped(list){
+  const by = {}; sortTx(list).forEach(x => (by[x.date] = by[x.date] || []).push(x));
+  return Object.keys(by).sort().reverse().map(d => {
+    const out = sum(by[d].filter(x=>x.type==='expense'));
+    return `<div class="dhead"><span>${thDF(d)}${d===today()?' · วันนี้':''}</span><span>${out?'-'+fmt(out).replace('-',''):''}</span></div>` + by[d].map(txRow).join('');
+  }).join('');
+}
+
+/* ---------- budget math ---------- */
+function budgetInfo(){
+  const t = today(), cy = bCycle(t), B = +S.settings.budget || 0;
+  const ex = S.tx.filter(x => x.type==='expense' && inR(x,cy));
+  const spentToday = sum(ex.filter(x => x.date===t));
+  const spentCycle = sum(ex);
+  const other = spentCycle - spentToday;
+  const daysLeft = diffD(t, cy.end) + 1, total = diffD(cy.start, cy.end) + 1, elapsed = total - daysLeft + 1;
+  const allow = (B - other) / daysLeft;
+  return {cy, B, spentToday, spentCycle, daysLeft, total, elapsed, allow, left: allow - spentToday, pct: B ? spentCycle/B*100 : 0, forecast: spentCycle/elapsed*total};
+}
+function upcoming(){
+  const t = today(), d = pd(t), ym = t.slice(0,7), out = [];
+  for (const b of S.bills.filter(b => b.active!==false)) {
+    const due = ds(mk(d.getFullYear(), d.getMonth(), +b.day||1));
+    if (!S.paid[b.id+'|'+ym]) out.push({kind:'bill', id:b.id, name:b.name, icon:cat(b.cat).icon, amt:+b.amount, due});
+  }
+  for (const a of cards()) { const st = cardStatus(a); if (st.remain > 0) out.push({kind:'card', id:a.id, name:'จ่ายบัตร '+a.name, icon:'💳', amt:st.remain, due:st.due}); }
+  return out.sort((p,q) => p.due.localeCompare(q.due));
+}
+function upRow(u){
+  const n = diffD(today(), u.due);
+  const tag = n<0 ? `<span class="pill bad">เลยกำหนด ${-n} วัน</span>` : n===0 ? `<span class="pill bad">วันนี้</span>` : n<=5 ? `<span class="pill warn">อีก ${n} วัน</span>` : `<span class="pill">${thD(u.due)}</span>`;
+  const act = u.kind==='bill' ? `payBill('${u.id}')` : `payCard('${u.id}')`;
+  return `<div class="it" onclick="${act}"><span class="emo">${u.icon}</span><div class="f1"><div class="t">${esc(u.name)}</div><div class="s">${tag}</div></div><div class="r"><b>${fmt(u.amt)}</b><span class="rw" style="color:var(--pri)">แตะเพื่อจ่าย</span></div></div>`;
+}
+
+/* ============================================================
+   VIEWS
+   ============================================================ */
+const V = {};
+
+V.home = () => {
+  const bi = budgetInfo(), liquid = S.accs.filter(a => a.type!=='card').reduce((s,a) => s + accBal(a.id), 0);
+  const debt = cards().reduce((s,a) => s + Math.min(0, accBal(a.id)), 0);
+  const hide = S.settings.hideBal;
+  const barC = bi.pct>100 ? 'var(--red)' : bi.pct>85 ? 'var(--amb)' : 'var(--pri)';
+  const up = upcoming().slice(0,5);
+  const recent = sortTx(S.tx).slice(0,6);
+  // hint for advisor card
+  let advHint = 'เพิ่มบัตรเครดิตก่อน แล้วแอปจะบอกว่าใบไหนคุ้มสุด';
+  if (cards().length) {
+    const cy = bi.cy, tally = {};
+    S.tx.filter(x => x.type==='expense' && inR(x,cy)).forEach(x => tally[x.cat] = (tally[x.cat]||0) + x.amount);
+    const topCat = Object.keys(tally).sort((p,q) => tally[q]-tally[p])[0] || 'food';
+    const best = advise(1000, topCat, '')[0];
+    advHint = best ? `หมวด${cat(topCat).name}: ${best.a.name} ≈${fmt0(best.val)}/พันบาท` : '';
+  }
+  return `
+  <section class="mini-hero" aria-label="mininote"><div class="mini-title">mininote<span style="color:#c59d64">.</span></div><div class="mini-copy">บันทึกเรื่องเงินเล็ก ๆ<br>ให้ทุกวันเบาสบายขึ้น</div><span class="mini-caption">✦ a little magic in every note</span><div class="mini-art" aria-hidden="true"><svg viewBox="0 0 220 150" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 143C35 113 94 134 122 130c37-6 54-20 95 11" fill="#759c80"/><path d="M146 143V76c0-10 18-11 18 0v67" fill="#f8f4dc" stroke="#658e76" stroke-width="2"/><path d="M143 76h24M146 90h18" stroke="#658e76" stroke-width="2"/><path d="M147 112c6-8 14-9 18 0v31h-18z" fill="#a7ccbe"/><path d="M181 141V99c0-10 25-10 25 0v42" fill="#9cc4bd" stroke="#658e76" stroke-width="2"/><path d="M182 98h23M188 87h11" stroke="#658e76" stroke-width="2"/><path d="M64 143c-3-15-1-29 8-35l-4-24 17 14c9-4 17-4 26 0l17-14-4 27c6 9 7 20 3 32" fill="#263d35"/><circle cx="86" cy="116" r="3" fill="#eee0a9"/><circle cx="111" cy="116" r="3" fill="#eee0a9"/><path d="M96 126l3 2 3-2M15 142c4-34 13-55 31-75M24 113c-12-9-13-16-9-23 10 1 14 8 14 15M37 90c1-14 7-19 16-21 2 12-2 20-13 24M28 125c-13-6-17-11-17-21 11-1 17 5 19 13" stroke="#5c8e68" stroke-width="2"/><path class="mini-leaf" d="M35 144c-4-18-4-27 5-44M39 121c8-14 17-17 23-14-4 10-12 15-23 14" fill="#7dab77" stroke="#5c8e68" stroke-width="2"/><path d="M169 65l5-12 5 12 12 5-12 4-5 12-5-12-12-4z" fill="#f7edc8"/><circle cx="198" cy="38" r="3" fill="#fff5d9"/></svg></div></section>
+  <div class="hdr">
+    <div class="bal" onclick="toggleBal()"><small>เงินที่มี ${hide?'👁️‍🗨️':'👁️'}</small><b>${hide?'฿ ••••••':fmt(liquid)}</b>${debt<0&&!hide?`<div class="small red">หนี้บัตร ${fmt(-debt)}</div>`:''}</div>
+    <button class="ib" onclick="go('tray')" aria-label="ถาดตรวจสอบ">📥${S.tray.length?`<i class="bdg">${S.tray.length}</i>`:''}</button>
+    <button class="ib" onclick="go('settings')" aria-label="ตั้งค่า">⚙️</button>
+  </div>
+
+  ${S.tray.length ? `<div class="card tap" onclick="go('tray')" style="background:var(--amb2)"><div class="row"><span class="emo">📥</span><div class="f1"><b>รอตรวจสอบ ${S.tray.length} รายการ</b><div class="small mut">AI จดให้แล้ว แตะเพื่อยืนยันก่อนบันทึกจริง</div></div><span>›</span></div></div>` : ''}
+
+  <section class="card">
+    <div class="row sb"><b>รอบ ${cycLabel(bi.cy)}</b><a onclick="go('report')" class="small">ดูสรุป ›</a></div>
+    <div class="grid2" style="margin-top:8px">
+      <div><div class="small mut">วันนี้ใช้ไป</div><div class="big">${fmt(bi.spentToday)}</div></div>
+      <div><div class="small mut">รอบนี้ใช้ไป</div><div class="big">${fmt(bi.spentCycle)}</div></div>
+    </div>
+    ${bi.B ? `
+    <div class="bar"><i style="width:${Math.min(100,bi.pct).toFixed(1)}%;background:${barC}"></i></div>
+    <div class="row sb small mut"><span>ใช้ไป ${bi.pct.toFixed(0)}%</span><span>งบ ${fmt0(bi.B)} · เหลือ ${fmt0(bi.B-bi.spentCycle)}</span></div>
+    <div class="leftbox ${bi.left<0?'neg':''}"><div><div>☀️ วันนี้ใช้ได้อีก</div><div class="small mut">เฉลี่ยได้วันละ ${fmt0(bi.allow)} · เหลือ ${bi.daysLeft} วัน</div></div><div class="amt">${fmt(bi.left)}</div></div>
+    <div class="small mut">📈 ถ้าใช้แบบนี้ต่อ สิ้นรอบจะใช้ ≈${fmt0(bi.forecast)} ${bi.forecast>bi.B?`<b class="red">เกินงบ ${fmt0(bi.forecast-bi.B)}</b>`:`<b class="grn">อยู่ในงบ</b>`}</div>
+    ` : `<div class="note">ยังไม่ได้ตั้งงบรายเดือน — <a onclick="go('settings')">ตั้งงบ</a> เพื่อดูว่าวันนี้ใช้ได้อีกเท่าไหร่</div>`}
+  </section>
+
+  <section class="card tap" onclick="openAdvisor()"><div class="row"><span class="emo">💡</span><div class="f1"><b>จะจ่าย? — รูดใบไหนดี</b><div class="small mut">${esc(advHint)}</div></div><span class="mut">›</span></div></section>
+
+  ${up.length ? `<div class="sec-t"><b>📅 ต้องจ่าย & ใกล้ถึง</b><a class="small" onclick="go('bills')">ทั้งหมด ›</a></div><div class="list">${up.map(upRow).join('')}</div>` : ''}
+
+  <div class="sec-t"><b>รายการล่าสุด</b><a class="small" onclick="go('list')">ทั้งหมด ›</a></div>
+  <div class="list">${recent.length ? recent.map(txRow).join('') : `<div class="empty">ยังไม่มีรายการ<br><span class="small">กดปุ่ม <b>+</b> ด้านล่าง แล้วถ่ายสลิป พูด หรือพิมพ์ได้เลย</span></div>`}</div>
+  `;
+};
+
+let LP = {off:0, q:'', t:'all'};
+V.list = () => {
+  const cy = cycleByOff(LP.off), q = LP.q.trim().toLowerCase();
+  let list = S.tx.filter(x => inR(x,cy));
+  if (LP.t!=='all') list = list.filter(x => x.type===LP.t);
+  if (q) list = list.filter(x => [x.merchant, x.note, cat(x.cat).name, (acc(x.acc)||{}).name, String(x.amount)].join(' ').toLowerCase().includes(q));
+  const inc = sum(list.filter(x=>x.type==='income')), out = sum(list.filter(x=>x.type==='expense'));
+  return `
+  <div class="hdr"><h1>รายการ</h1><button class="ib" onclick="exportCSV()" title="ส่งออก CSV">⬇️</button></div>
+  <div class="per"><button onclick="LP.off++;render()">‹</button><b>${cycLabel(cy)}</b><button onclick="LP.off--;render()" ${LP.off<=0?'disabled':''}>›</button></div>
+  <div class="grid2" style="margin-bottom:10px">
+    <div class="card" style="margin:0"><div class="small mut">รายรับ</div><b class="grn">${fmt(inc)}</b></div>
+    <div class="card" style="margin:0"><div class="small mut">รายจ่าย</div><b class="red">${fmt(out)}</b></div>
+  </div>
+  <input class="search" placeholder="🔍 ค้นหา ร้าน โน้ต หมวด ยอด" value="${esc(LP.q)}" oninput="LP.q=this.value;clearTimeout(window._lq);window._lq=setTimeout(()=>{render();const s=$('.search');s.focus();s.setSelectionRange(s.value.length,s.value.length)},250)">
+  <div class="seg">${[['all','ทั้งหมด'],['expense','รายจ่าย'],['income','รายรับ'],['transfer','โอน']].map(([k,l]) => `<button class="${LP.t===k?'on':''}" onclick="LP.t='${k}';render()">${l}</button>`).join('')}</div>
+  <div class="list">${list.length ? grouped(list) : '<div class="empty">ไม่มีรายการในรอบนี้</div>'}</div>`;
+};
+
+V.tray = () => {
+  const dup = d => S.tx.some(x => x.amount===d.amount && x.date===d.date && x.type===d.type);
+  return `${hdr('ถาดตรวจสอบ')}
+  <div class="note">AI จดมาให้แล้ว — ตรวจยอด/หมวด/บัญชีให้ถูก แล้วกด ✓ เพื่อบันทึกจริง</div>
+  <div class="list">${S.tray.length ? S.tray.map(d => {
+    const c = cat(d.cat), a = acc(d.acc);
+    return `<div class="it"><span class="emo" onclick="editDraft('${d.id}')">${c.icon}</span>
+      <div class="f1" onclick="editDraft('${d.id}')"><div class="t">${esc(d.merchant||c.name)}</div><div class="s">${thD(d.date)}${d.time?' '+d.time:''} · ${esc(a?a.name:'?')} · ${c.name}${dup(d)?' · <span class="amb">⚠️ อาจซ้ำ</span>':''}</div></div>
+      <div class="r"><b class="${d.type==='income'?'grn':''}">${d.type==='income'?'+':'-'}${fmt(d.amount).replace('-','')}</b><div style="margin-top:4px"><button class="btn sm ghost" onclick="dropDraft('${d.id}')">✕</button> <button class="btn sm pri" onclick="okDraft('${d.id}')">✓</button></div></div></div>`;
+  }).join('') : '<div class="empty">ไม่มีรายการรอตรวจ 🎉</div>'}</div>
+  ${S.tray.length>1 ? `<button class="btn pri" style="width:100%" onclick="okAllDrafts()">✓ ยืนยันทั้งหมด (${S.tray.length})</button>` : ''}`;
+};
+
+V.more = () => `
+  <div class="hdr"><h1>เพิ่มเติม</h1></div>
+  <div class="tiles">
+    <button class="tile" onclick="go('accounts')"><span class="e">💳</span><b>บัญชี & บัตร</b><span>ยอดคงเหลือ · รอบบิล · เงินคืน</span></button>
+    <button class="tile" onclick="go('bills')"><span class="e">🧾</span><b>บิลประจำ</b><span>ค่าเน็ต ค่าหอ สมาชิกรายเดือน</span></button>
+    <button class="tile" onclick="go('report')"><span class="e">📊</span><b>สรุป</b><span>ตามหมวด · รายวัน · บัญชี</span></button>
+    <button class="tile" onclick="openAdvisor()"><span class="e">💡</span><b>รูดใบไหนคุ้ม</b><span>เทียบเงินคืน/แต้มทุกใบ</span></button>
+    <button class="tile" onclick="go('tray')"><span class="e">📥</span><b>ถาดตรวจสอบ</b><span>${S.tray.length} รายการรอยืนยัน</span></button>
+    <button class="tile" onclick="go('settings')"><span class="e">⚙️</span><b>ตั้งค่า</b><span>งบ · AI · สำรองข้อมูล</span></button>
+    <button class="tile" onclick="installHelp()"><span class="e">📲</span><b>ติดตั้งเป็นแอป</b><span>เพิ่มลงหน้าจอโฮม</span></button>
+    <button class="tile" onclick="go('split')"><span class="e">👥</span><b>หารบิล</b><span>ทริป · ปาร์ตี้ · QR พร้อมเพย์</span></button>
+  </div>
+  <p class="small mut" style="text-align:center;margin-top:18px">🔒 ข้อมูลทั้งหมดอยู่ในเครื่องนี้ · ไม่เชื่อมบัญชีธนาคาร · ไม่อ่าน SMS</p>`;
+
+V.accounts = () => {
+  const norm = S.accs.filter(a => a.type!=='card'), cs = cards();
+  return `${hdr('บัญชี & บัตร','more')}
+  <div class="sec-t"><b>บัญชี / กระเป๋าเงิน</b><a class="small" onclick="openAcc()">+ เพิ่ม</a></div>
+  <div class="list">${norm.map(a => `<div class="it" onclick="openAcc('${a.id}')"><span class="emo">${a.icon||'💰'}</span><div class="f1"><div class="t">${esc(a.name)}</div><div class="s">${ACC_T[a.type]||''}${S.settings.defaultAcc===a.id?' · ค่าเริ่มต้น':''}</div></div><div class="r"><b>${fmt(accBal(a.id))}</b></div></div>`).join('') || '<div class="empty">ยังไม่มีบัญชี</div>'}</div>
+  <div class="sec-t"><b>บัตรเครดิต</b><a class="small" onclick="openAcc(null,'card')">+ เพิ่มบัตร</a></div>
+  <div class="list">${cs.map(a => {
+    const st = cardStatus(a), cap = +a.card.cap || 0, used = capUsed(a);
+    return `<div class="it" onclick="openAcc('${a.id}')"><span class="emo">${a.icon||'💳'}</span><div class="f1"><div class="t">${esc(a.name)}</div>
+      <div class="s">รอบนี้ ${fmt0(st.unbilled)} · ตัดรอบ ${thD(st.cur.end)}${st.remain>0?` · ครบชำระ ${thD(st.due)} ${fmt0(st.remain)}`:''}</div>
+      <div class="s grn">ได้คืนรอบนี้ ≈${fmt(cap?Math.min(used,cap):used)}${cap?` / เพดาน ${fmt0(cap)}`:''}</div></div>
+      <div class="r"><b class="${accBal(a.id)<0?'red':''}">${fmt(accBal(a.id))}</b>${a.card.limit?`<span class="rw mut" style="color:var(--mut)">วงเงินเหลือ ${fmt0(+a.card.limit+accBal(a.id))}</span>`:''}</div></div>`;
+  }).join('') || '<div class="empty">ยังไม่มีบัตร — เพิ่มบัตรแล้วตั้งกฎเงินคืน/แต้ม<br>แอปจะแนะนำใบที่คุ้มที่สุดทุกครั้งที่จ่าย</div>'}</div>
+  <div class="note">💡 จ่ายบัตร = กด + → <b>โอน/จ่ายบัตร</b> จากบัญชีธนาคาร → ไปที่บัตร</div>`;
+};
+
+V.bills = () => {
+  const ym = today().slice(0,7);
+  return `${hdr('บิลประจำ','more')}
+  <div class="note">ตั้งบิลที่จ่ายทุกเดือน เช่น ค่าเน็ต ค่าหอ Netflix — จะขึ้นในหน้าหลัก "ต้องจ่าย & ใกล้ถึง" และกดจ่ายแล้วจดให้อัตโนมัติ</div>
+  <div class="list">${S.bills.map(b => `<div class="it" onclick="openBill('${b.id}')"><span class="emo">${cat(b.cat).icon}</span><div class="f1"><div class="t">${esc(b.name)}</div><div class="s">ทุกวันที่ ${b.day} · ${esc((acc(b.acc)||{}).name||'')}${b.active===false?' · ปิดอยู่':''}</div></div><div class="r"><b>${fmt(+b.amount)}</b>${S.paid[b.id+'|'+ym]?'<span class="rw">✓ จ่ายเดือนนี้แล้ว</span>':''}</div></div>`).join('') || '<div class="empty">ยังไม่มีบิลประจำ</div>'}</div>
+  <button class="btn pri" style="width:100%" onclick="openBill()">+ เพิ่มบิลประจำ</button>
+  ${cards().length?`<div class="sec-t"><b>บัตรเครดิตที่ต้องจ่าย</b></div><div class="list">${cards().map(a=>{const st=cardStatus(a);return `<div class="it" onclick="payCard('${a.id}')"><span class="emo">💳</span><div class="f1"><div class="t">${esc(a.name)}</div><div class="s">ครบชำระ ${thD(st.due)} · ยอดรอบที่แล้ว ${fmt0(st.stmt)} · จ่ายแล้ว ${fmt0(st.paid)}</div></div><div class="r"><b class="${st.remain>0?'red':'grn'}">${st.remain>0?fmt(st.remain):'✓'}</b></div></div>`}).join('')}</div>`:''}`;
+};
+
+let RP = {off:0};
+V.report = () => {
+  const cy = cycleByOff(RP.off);
+  const ex = S.tx.filter(x => x.type==='expense' && inR(x,cy)), inc = S.tx.filter(x => x.type==='income' && inR(x,cy));
+  const tot = sum(ex), byC = {}, byA = {};
+  ex.forEach(x => { byC[x.cat] = (byC[x.cat]||0) + x.amount; byA[x.acc] = (byA[x.acc]||0) + x.amount; });
+  const cs = Object.keys(byC).sort((p,q) => byC[q]-byC[p]);
+  const as = Object.keys(byA).sort((p,q) => byA[q]-byA[p]);
+  const top = sortTx(ex).sort((p,q) => q.amount-p.amount).slice(0,5);
+  const rewards = ex.reduce((s,x) => s + txReward(x), 0);
+  return `${hdr('สรุป','more')}
+  <div class="per"><button onclick="RP.off++;render()">‹</button><b>${cycLabel(cy)}</b><button onclick="RP.off--;render()" ${RP.off<=0?'disabled':''}>›</button></div>
+  <div class="grid2" style="margin-bottom:12px">
+    <div class="card" style="margin:0"><div class="small mut">รายรับ</div><b class="grn">${fmt(sum(inc))}</b></div>
+    <div class="card" style="margin:0"><div class="small mut">รายจ่าย</div><b class="red">${fmt(tot)}</b></div>
+    <div class="card" style="margin:0"><div class="small mut">คงเหลือ</div><b>${fmt(sum(inc)-tot)}</b></div>
+    <div class="card" style="margin:0"><div class="small mut">ได้คืนจากบัตร ≈</div><b class="grn">${fmt(rewards)}</b></div>
+  </div>
+  <div class="card"><h3>รายจ่ายรายวัน</h3>${dailySvg(cy, ex)}<div class="small mut">เส้นประ = งบเฉลี่ยต่อวัน · แท่งสีส้ม = เกินงบวันนั้น</div></div>
+  <div class="card"><h3>ตามหมวด</h3>${cs.length ? cs.map(k => `<div class="cat-bar"><span style="width:26px">${cat(k).icon}</span><div class="f1"><div class="row sb small"><span>${cat(k).name}</span><b>${fmt0(byC[k])} <span class="mut">${(byC[k]/tot*100).toFixed(0)}%</span></b></div><div class="bb"><i style="width:${(byC[k]/byC[cs[0]]*100).toFixed(1)}%"></i></div></div></div>`).join('') : '<div class="empty">ไม่มีรายจ่าย</div>'}</div>
+  <div class="card"><h3>ตามบัญชี/บัตร</h3>${as.map(k => `<div class="kv"><span>${(acc(k)||{}).icon||''} ${esc((acc(k)||{}).name||'?')}</span><b>${fmt(byA[k])}</b></div>`).join('') || '<div class="mut small">—</div>'}</div>
+  ${top.length?`<div class="card"><h3>จ่ายก้อนใหญ่สุด</h3>${top.map(x=>`<div class="kv"><span>${cat(x.cat).icon} ${esc(x.merchant||cat(x.cat).name)} <span class="mut small">${thD(x.date)}</span></span><b>${fmt(x.amount)}</b></div>`).join('')}</div>`:''}`;
+};
+function dailySvg(cy, ex){
+  const days = diffD(cy.start, cy.end) + 1, vals = [];
+  for (let i=0;i<days;i++) { const d = addD(cy.start,i); vals.push(sum(ex.filter(x => x.date===d))); }
+  const mx = Math.max(...vals, 1), W = 320, H = 110, bw = W/days, avg = (+S.settings.budget||0)/days;
+  const bars = vals.map((v,i) => { const h = v/mx*(H-8); return `<rect x="${(i*bw+bw*.15).toFixed(1)}" y="${(H-h).toFixed(1)}" width="${(bw*.7).toFixed(1)}" height="${Math.max(h,0).toFixed(1)}" rx="1.5" fill="${avg>0&&v>avg?'var(--amb)':'var(--pri)'}"><title>${thD(addD(cy.start,i))}: ${fmt0(v)}</title></rect>`; }).join('');
+  const ay = H - avg/mx*(H-8);
+  return `<svg viewBox="0 0 ${W} ${H+14}" class="chart" role="img" aria-label="กราฟรายจ่ายรายวัน">${bars}${avg>0&&avg<mx?`<line x1="0" x2="${W}" y1="${ay.toFixed(1)}" y2="${ay.toFixed(1)}" stroke="var(--mut)" stroke-dasharray="3 3" stroke-width="1"/>`:''}<text x="0" y="${H+12}" font-size="9" fill="var(--mut)">${thD(cy.start)}</text><text x="${W}" y="${H+12}" font-size="9" fill="var(--mut)" text-anchor="end">${thD(cy.end)}</text></svg>`;
+}
+
+V.settings = () => {
+  const s = S.settings, accOpts = S.accs.map(a => `<option value="${a.id}" ${a.id===s.defaultAcc?'selected':''}>${a.icon} ${esc(a.name)}</option>`).join('');
+  const setIn = (k, type='text', extra='') => `value="${esc(s[k])}" type="${type}" ${extra} onchange="setS('${k}',this.value,'${type}')"`;
+  return `${hdr('ตั้งค่า','more')}
+  <div class="card"><h3>💰 งบ & รอบเงินเดือน</h3>
+    <label class="fl">งบใช้จ่ายต่อรอบ (บาท)<input ${setIn('budget','number','inputmode="decimal"')}></label>
+    <label class="fl">รอบเริ่มวันที่ (เช่น เงินเดือนออกวันที่ 25 → ใส่ 25)<input ${setIn('cycleDay','number','min="1" max="31"')}></label>
+    <label class="fl">บัญชีเริ่มต้นตอนจด<select onchange="setS('defaultAcc',this.value)">${accOpts}</select></label>
+  </div>
+  <div class="card"><h3>🤖 AI จดให้</h3>
+    <div class="seg">${[['gemini','Google Gemini'],['claude','Claude']].map(([k,l]) => `<button class="${s.ai===k?'on':''}" onclick="setS('ai','${k}');render()">${l}</button>`).join('')}</div>
+    ${s.ai==='gemini' ? `
+      <label class="fl">Gemini API key<input ${setIn('geminiKey','password','autocomplete="off" placeholder="AIza..."')}></label>
+      <label class="fl">Model<input ${setIn('geminiModel')}></label>
+      <div class="note">ขอ key ฟรีได้ที่ <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></div>` : `
+      <label class="fl">Claude API key<input ${setIn('claudeKey','password','autocomplete="off" placeholder="sk-ant-..."')}></label>
+      <label class="fl">Model<input ${setIn('claudeModel')}></label>
+      <div class="note">ขอ key ได้ที่ <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a> (คิดตามการใช้งาน)</div>`}
+    <div class="note">🔒 key เก็บในเครื่องนี้เท่านั้น รูปสลิปส่งตรงไปผู้ให้บริการ AI ที่เลือก ไม่ผ่านเซิร์ฟเวอร์อื่น · ไม่มี key ก็ยังพิมพ์/พูดจดได้ (ใช้ตัวแยกคำในเครื่อง)</div>
+    <button class="btn ghost" onclick="testAI()">ทดสอบ AI</button>
+  </div>
+  <div class="card"><h3>👥 หารบิล</h3>
+    <label class="fl">ชื่อของฉัน<input ${setIn('myName')}></label>
+    <label class="fl">พร้อมเพย์ของฉัน (เบอร์/เลขบัตร ปชช.) — ใช้สร้าง QR ให้เพื่อนโอน<input ${setIn('promptpay','text','inputmode="numeric"')}></label>
+  </div>
+  <div class="card"><h3>🏷️ หมวดหมู่</h3>
+    ${['expense','income'].map(t => `<div class="small mut" style="margin:6px 0">${TL[t]}</div><div class="chips">${S.cats.filter(c=>c.type===t).map(c => `<span class="chip" onclick="delCat('${c.id}')">${c.icon} ${esc(c.name)} ✕</span>`).join('')}</div>`).join('')}
+    <div class="row"><input id="nCatI" class="search" style="width:64px;margin:0" placeholder="🙂" maxlength="4"><input id="nCatN" class="search f1" style="margin:0" placeholder="ชื่อหมวดใหม่"><select id="nCatT" class="search" style="width:auto;margin:0"><option value="expense">จ่าย</option><option value="income">รับ</option></select></div>
+    <button class="btn ghost" style="margin-top:8px" onclick="addCat()">+ เพิ่มหมวด</button>
+  </div>
+  <div class="card"><h3>🎨 ธีม</h3>
+    <div class="seg">${[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']].map(([k,l]) => `<button class="${s.theme===k?'on':''}" onclick="setS('theme','${k}');render()">${l}</button>`).join('')}</div>
+  </div>
+  <div class="card"><h3>💾 ข้อมูล</h3>
+    <div class="note">ข้อมูลอยู่ในเบราว์เซอร์เครื่องนี้ — แนะนำสำรองเป็นไฟล์เป็นระยะ (ล้างข้อมูลเบราว์เซอร์ = ข้อมูลหาย)</div>
+    <div class="btns" style="flex-wrap:wrap">
+      <button class="btn ghost" onclick="backup()">⬇️ สำรอง (.json)</button>
+      <button class="btn ghost" onclick="$('#fRestore').click()">⬆️ กู้คืน</button>
+      <button class="btn ghost" onclick="exportCSV()">📄 CSV</button>
+      <button class="btn ghost red" onclick="resetAll()">ล้างทั้งหมด</button>
+    </div>
+    <div class="small mut" style="margin-top:8px">${S.tx.length} รายการ · ${S.accs.length} บัญชี · ${S.groups.length} กลุ่มหารบิล</div>
+  </div>`;
+};
+
+/* ---------- split views ---------- */
+V.split = () => `
+  <div class="hdr"><h1>หารบิล</h1></div>
+  <div class="note">สร้างกลุ่ม (ทริป/มื้อ/ห้องพัก) ใส่ว่าใครจ่ายอะไร แอปสรุปว่าใครต้องโอนให้ใคร พร้อม QR พร้อมเพย์</div>
+  <div class="list">${S.groups.slice().reverse().map(g => {
+    const b = gBal(g), me = r2(b.me||0), tot = sum(g.items.filter(i=>!i.settle));
+    return `<div class="it" onclick="go('group',{id:'${g.id}'})"><span class="emo">${g.icon||'🧳'}</span><div class="f1"><div class="t">${esc(g.name)}</div><div class="s">${g.members.length} คน · รวม ${fmt0(tot)}</div></div><div class="r"><b class="${me>0.009?'grn':me<-0.009?'red':'mut'}">${me>0.009?'ได้คืน '+fmt0(me):me<-0.009?'ต้องจ่าย '+fmt0(-me):'เคลียร์แล้ว'}</b></div></div>`;
+  }).join('') || '<div class="empty">ยังไม่มีกลุ่ม</div>'}</div>
+  <button class="btn pri" style="width:100%" onclick="newGroup()">+ สร้างกลุ่มหารบิล</button>`;
+
+V.group = () => {
+  const g = S.groups.find(x => x.id===VP.id); if (!g) return V.split();
+  const b = gBal(g), st = settle(b), mn = id => (g.members.find(m=>m.id===id)||{}).name || '?';
+  const tot = sum(g.items.filter(i=>!i.settle));
+  return `${hdr(esc(g.name),'split')}
+  <div class="card"><div class="row sb"><b>สมาชิก</b><a class="small" onclick="addMember('${g.id}')">+ เพิ่มคน</a></div><div style="margin-top:8px">${g.members.map(m => `<span class="mem" onclick="editMember('${g.id}','${m.id}')">${m.id==='me'?'🙋':'👤'} ${esc(m.name)}${m.pp?' · 📱':''}</span>`).join('')}</div></div>
+  <div class="card"><div class="row sb"><b>ต้องโอน</b><span class="small mut">รวม ${fmt(tot)}</span></div>
+    ${st.length ? st.map(s => `<div class="rank"><div class="f1"><b>${esc(mn(s.from))}</b> → <b>${esc(mn(s.to))}</b><div class="small mut">${fmt(s.amt)}</div></div><button class="btn sm ghost" onclick="showPayQR('${g.id}','${s.from}','${s.to}',${s.amt})">QR</button><button class="btn sm pri" onclick="markSettled('${g.id}','${s.from}','${s.to}',${s.amt})">โอนแล้ว</button></div>`).join('') : '<div class="empty" style="padding:12px">✅ เคลียร์ครบแล้ว</div>'}
+    <div class="btns"><button class="btn ghost f1" onclick="shareGroup('${g.id}')">📤 ส่งสรุปให้เพื่อน</button></div>
+  </div>
+  <div class="sec-t"><b>ค่าใช้จ่าย</b><a class="small" onclick="openGItem('${g.id}')">+ เพิ่ม</a></div>
+  <div class="list">${g.items.slice().reverse().map(i => `<div class="it" onclick="openGItem('${g.id}','${i.id}')"><span class="emo">${i.settle?'✅':'🧾'}</span><div class="f1"><div class="t">${esc(i.title)}</div><div class="s">${esc(mn(i.payer))} จ่าย${i.settle?' ให้ '+esc(mn(i.among[0])):' · หาร '+(i.custom?'ตามจริง':i.among.length+' คน')}</div></div><div class="r"><b>${fmt(i.amount)}</b></div></div>`).join('') || '<div class="empty">ยังไม่มีค่าใช้จ่าย</div>'}</div>
+  <button class="btn pri" style="width:100%" onclick="openGItem('${g.id}')">+ เพิ่มค่าใช้จ่าย</button>
+  <div class="btns"><button class="btn ghost red f1" onclick="delGroup('${g.id}')">ลบกลุ่ม</button></div>`;
+};
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+function toggleBal(){ S.settings.hideBal = !S.settings.hideBal; save(); render(); }
+function setS(k, v, type){ if (type==='number') v = +v || 0; if (k==='cycleDay') v = Math.min(31, Math.max(1, Math.round(v))); S.settings[k] = typeof v==='string' ? v.trim() : v; save(); if (k==='theme') applyTheme(); toast('บันทึกแล้ว', 1000); }
+
+/* ---------- add menu ---------- */
+function openAdd(){
+  sheet(`<div class="sh-h"><b>จดรายการ</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <div class="menu">
+    <button onclick="pick('fCam')"><span class="e">📷</span><b>ถ่ายสลิป/ใบเสร็จ</b><span>AI อ่านยอด+ร้านให้</span></button>
+    <button onclick="pick('fImg')"><span class="e">🖼️</span><b>เลือกรูป</b><span>สลิป/หน้าจอ หลายรูปได้</span></button>
+    <button onclick="openText(true)"><span class="e">🎙️</span><b>พูด</b><span>"ข้าวมันไก่ 50"</span></button>
+    <button onclick="openText(false)"><span class="e">⌨️</span><b>พิมพ์ประโยค</b><span>"กาแฟ 65, BTS 44"</span></button>
+    <button onclick="pick('fQR')"><span class="e">🔳</span><b>สแกน QR ก่อนจ่าย</b><span>จดยอดจาก QR ร้าน</span></button>
+    <button onclick="closeSheet();openForm({})"><span class="e">✍️</span><b>กรอกเอง</b><span>ใส่ยอด เลือกหมวด</span></button>
+    <button class="wide" onclick="closeSheet();openForm({type:'transfer'})"><span class="e">↔️</span><b>โอนระหว่างบัญชี / จ่ายบัตรเครดิต</b></button>
+  </div>
+  ${hasAI() ? '' : `<div class="note" style="margin-top:12px">ยังไม่ได้ใส่ API key — การอ่านรูปต้องใช้ AI · <a onclick="closeSheet();go('settings')">ตั้งค่า AI</a></div>`}`);
+}
+function pick(id){ const el = $('#'+id); el.value = ''; el.click(); }
+
+/* ---------- tx form ---------- */
+let F = null;
+function openForm(d, mode='new', ref=null){
+  F = {mode, ref, d:{type:'expense', amount:'', cat:'', acc:S.settings.defaultAcc, to:'', merchant:'', note:'', date:today(), time:nowTime(), ...d}};
+  if (!acc(F.d.acc)) F.d.acc = (S.accs[0]||{}).id;
+  if (!F.d.cat || (F.d.type!=='transfer' && cat(F.d.cat).type !== (F.d.type==='income'?'income':'expense'))) F.d.cat = firstCat(F.d.type);
+  renderForm();
+}
+function accOpts(sel, excl){ return S.accs.filter(a => a.id!==excl).map(a => `<option value="${a.id}" ${a.id===sel?'selected':''}>${a.icon||''} ${esc(a.name)}</option>`).join(''); }
+function catChips(type, sel, fn){ return S.cats.filter(c => c.type===(type==='income'?'income':'expense')).map(c => `<button class="chip ${c.id===sel?'on':''}" onclick="${fn}('${c.id}')">${c.icon} ${esc(c.name)}</button>`).join(''); }
+function renderForm(){
+  const d = F.d, isT = d.type==='transfer', sc = $('#sheet').scrollTop;
+  const title = {new:'จดรายการ', edit:'แก้ไขรายการ', draft:'ตรวจสอบรายการ'}[F.mode];
+  sheet(`<div class="sh-h"><b>${title}</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <div class="seg">${['expense','income','transfer'].map(t => `<button class="${d.type===t?'on':''}" onclick="fType('${t}')">${TL[t]}</button>`).join('')}</div>
+  <div class="amtw"><span>฿</span><input id="fAmt" inputmode="decimal" placeholder="0" value="${esc(d.amount)}" oninput="F.d.amount=this.value;fHint()" autocomplete="off"></div>
+  ${isT ? '' : `<div class="chips" id="fCats">${catChips(d.type, d.cat, 'fCat')}</div>`}
+  <label class="fl">${isT?'จากบัญชี':d.type==='income'?'เข้าบัญชี':'จ่ายด้วย'}<select onchange="F.d.acc=this.value;fHint()">${accOpts(d.acc)}</select></label>
+  ${isT ? `<label class="fl">ไปบัญชี / บัตร<select onchange="F.d.to=this.value"><option value="">— เลือก —</option>${accOpts(d.to, d.acc)}</select></label>` : ''}
+  <label class="fl">${isT?'รายละเอียด':d.type==='income'?'จาก':'ร้าน / ผู้รับ'}<input value="${esc(d.merchant)}" oninput="F.d.merchant=this.value;fHint()" placeholder="${isT?'เช่น จ่ายบัตร KTC':'เช่น 7-Eleven, Shopee'}"></label>
+  <label class="fl">โน้ต<input value="${esc(d.note)}" oninput="F.d.note=this.value"></label>
+  <div class="grid2"><label class="fl">วันที่<input type="date" value="${d.date}" onchange="F.d.date=this.value||today()"></label><label class="fl">เวลา<input type="time" value="${d.time||''}" onchange="F.d.time=this.value"></label></div>
+  <div id="fHint" class="hint"></div>
+  <div class="btns">${F.mode!=='new'?`<button class="btn ghost red" onclick="fDel()">${F.mode==='draft'?'ทิ้ง':'ลบ'}</button>`:''}<button class="btn pri f1" onclick="saveForm()">บันทึก</button></div>
+  ${F.mode==='new' ? `<button class="btn ghost" style="width:100%;margin-top:8px" onclick="saveForm(true)">บันทึก แล้วจดต่อ</button>` : ''}`);
+  $('#sheet').scrollTop = sc;
+  fHint();
+  if (F.mode==='new' && !d.amount) setTimeout(() => { const i = $('#fAmt'); if (i) i.focus(); }, 280);
+}
+function fType(t){ F.d.type = t; if (t!=='transfer') F.d.cat = firstCat(t); renderForm(); }
+function fCat(id){ F.d.cat = id; $('#fCats').innerHTML = catChips(F.d.type, id, 'fCat'); fHint(); }
+function fHint(){
+  const el = $('#fHint'); if (!el) return;
+  const d = F.d, amt = parseAmt(d.amount);
+  let h = '';
+  if (/[+\-*/]/.test(String(d.amount)) && amt) h += `🧮 = <b>${fmt(amt)}</b><br>`;
+  if (d.type==='expense' && amt > 0 && cards().length) {
+    const res = advise(amt, d.cat, d.merchant), best = res[0], a = acc(d.acc);
+    const curr = a && a.type==='card' ? res.find(r => r.a.id===a.id) : null;
+    if (best && best.val > 0) {
+      if (curr && curr.a.id===best.a.id) h += `✅ ใช้ <b>${esc(best.a.name)}</b> คุ้มสุดแล้ว ได้คืน ≈<b>${fmt(best.val)}</b> (${best.why})`;
+      else h += `💳 แนะนำรูด <b>${esc(best.a.name)}</b> ได้คืน ≈<b>${fmt(best.val)}</b> (${best.why})${curr?` · ใบที่เลือกได้ ${fmt(curr.val)}`:''} <a onclick="F.d.acc='${best.a.id}';renderForm()">ใช้ใบนี้</a>`;
+      if (best.capped) h += `<br><span class="amb">⚠️ ใกล้ชนเพดาน เหลือ ${fmt(best.capLeft)}</span>`;
+    }
+  }
+  if (d.type==='transfer' && acc(d.to) && acc(d.to).type==='card') { const st = cardStatus(acc(d.to)); if (st.remain>0) h += `💳 ยอดต้องชำระ ${fmt(st.remain)} ครบ ${thD(st.due)} <a onclick="F.d.amount='${st.remain}';renderForm()">ใส่ยอดนี้</a>`; }
+  el.innerHTML = h; el.classList.toggle('on', !!h);
+}
+function saveForm(again){
+  const d = F.d, amt = parseAmt(d.amount);
+  if (!(amt > 0)) { toast('ใส่จำนวนเงินก่อน'); $('#fAmt')?.focus(); return; }
+  if (d.type==='transfer' && (!d.to || d.to===d.acc)) { toast('เลือกบัญชีปลายทาง'); return; }
+  const rec = {id: F.mode==='edit' ? F.ref : uid(), type:d.type, amount:amt, cat: d.type==='transfer' ? '' : d.cat, acc:d.acc, to: d.type==='transfer' ? d.to : '', merchant:(d.merchant||'').trim(), note:(d.note||'').trim(), date:d.date||today(), time:d.time||'', created:Date.now()};
+  if (F.mode==='edit') { const i = S.tx.findIndex(x => x.id===F.ref); if (i>=0) { rec.created = S.tx[i].created; S.tx[i] = rec; } }
+  else S.tx.push(rec);
+  if (F.mode==='draft') S.tray = S.tray.filter(x => x.id!==F.ref);
+  if (F.after) F.after(rec);
+  save();
+  toast(F.mode==='edit' ? 'แก้ไขแล้ว' : `บันทึก ${fmt(amt)} แล้ว`);
+  if (again) { const keep = {type:d.type, acc:d.acc, date:d.date}; render(); openForm(keep); return; }
+  closeSheet(); render();
+  if (F.mode==='draft' && S.tray.length) { editDraft(S.tray[0].id); }
+}
+function fDel(){
+  if (F.mode==='draft') { S.tray = S.tray.filter(x => x.id!==F.ref); save(); closeSheet(); render(); return; }
+  if (!confirm('ลบรายการนี้?')) return;
+  S.tx = S.tx.filter(x => x.id!==F.ref);
+  for (const k in S.paid) if (S.paid[k]===F.ref) delete S.paid[k];
+  save(); closeSheet(); render(); toast('ลบแล้ว');
+}
+function editTx(id){ const x = S.tx.find(t => t.id===id); if (x) openForm({...x}, 'edit', id); }
+function editDraft(id){ const x = S.tray.find(t => t.id===id); if (x) openForm({...x}, 'draft', id); }
+function dropDraft(id){ S.tray = S.tray.filter(x => x.id!==id); save(); render(); }
+function okDraft(id){ const d = S.tray.find(x => x.id===id); if (!d) return; if (!(d.amount>0)) return editDraft(id); S.tx.push({...d, id:uid(), created:Date.now()}); S.tray = S.tray.filter(x => x.id!==id); save(); render(); toast('บันทึกแล้ว'); }
+function okAllDrafts(){ const ok = S.tray.filter(d => d.amount>0); ok.forEach(d => S.tx.push({...d, id:uid(), created:Date.now()})); S.tray = S.tray.filter(d => !(d.amount>0)); save(); render(); toast(`บันทึก ${ok.length} รายการ`); }
+
+/* ---------- advisor ---------- */
+let ADV = {amt:'', cat:'food', mer:''};
+function openAdvisor(){
+  if (!cards().length) { closeSheet(); go('accounts'); toast('เพิ่มบัตรเครดิตก่อน'); return; }
+  sheet(`<div class="sh-h"><b>💡 รูดใบไหนคุ้มสุด</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <div class="amtw"><span>฿</span><input inputmode="decimal" placeholder="ยอดที่จะจ่าย" value="${esc(ADV.amt)}" oninput="ADV.amt=this.value;advRes()"></div>
+  <label class="fl">ร้าน (ถ้ามี)<input value="${esc(ADV.mer)}" placeholder="เช่น Shopee, Lotus, PTT" oninput="ADV.mer=this.value;advRes()"></label>
+  <div class="chips" id="advCats">${catChips('expense', ADV.cat, 'advCat')}</div>
+  <div class="card" id="advRes"></div>`);
+  advRes();
+}
+function advCat(id){ ADV.cat = id; $('#advCats').innerHTML = catChips('expense', id, 'advCat'); advRes(); }
+function advRes(){
+  const amt = parseAmt(ADV.amt) || 1000, res = advise(amt, ADV.cat, ADV.mer);
+  $('#advRes').innerHTML = `<div class="small mut" style="margin-bottom:4px">${parseAmt(ADV.amt)?'':'ตัวอย่างที่ยอด ฿1,000 · '}${cat(ADV.cat).icon} ${cat(ADV.cat).name}${ADV.mer?' · '+esc(ADV.mer):''}</div>` +
+    res.map((r,i) => `<div class="rank ${i===0&&r.val>0?'top':''}"><span class="n">${i+1}</span><div class="f1"><b>${esc(r.a.name)}</b><div class="small mut">${rLabel(r.a.card, r.rate)} · ${r.why}${r.capped?` · <span class="amb">ชนเพดาน (เหลือ ${fmt0(r.capLeft)})</span>`:''}</div></div><div class="r"><b class="${r.val>0?'grn':'mut'}">${fmt(r.val)}</b><div class="small mut">${r.pct.toFixed(2)}%</div></div></div>`).join('') +
+    `<button class="btn pri" style="width:100%;margin-top:10px" onclick="closeSheet();openForm({amount:'${parseAmt(ADV.amt)||''}',cat:'${ADV.cat}',merchant:${esc(JSON.stringify(ADV.mer))},acc:'${res[0]?res[0].a.id:S.settings.defaultAcc}'})">จดรายการนี้ด้วย ${res[0]?esc(res[0].a.name):''}</button>`;
+}
+
+/* ---------- accounts & cards form ---------- */
+let A = null;
+function openAcc(id, type){
+  const ex = id ? acc(id) : null;
+  A = ex ? JSON.parse(JSON.stringify(ex)) : {id:null, name:'', icon: type==='card'?'💳':'🏦', type: type||'bank', open:0};
+  if (A.type==='card' && !A.card) A.card = {cut:25, due:10, limit:0, rtype:'cashback', base:0.5, per:25, pv:0.25, cap:0, rules:[]};
+  renderAcc();
+}
+function renderAcc(){
+  const isC = A.type==='card', c = A.card || {};
+  const openVal = isC ? -(+A.open||0) : (+A.open||0);
+  sheet(`<div class="sh-h"><b>${A.id?'แก้ไข':'เพิ่ม'}${isC?'บัตรเครดิต':'บัญชี'}</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <div class="row"><label class="fl" style="width:70px">ไอคอน<input value="${esc(A.icon)}" maxlength="4" oninput="A.icon=this.value"></label><label class="fl f1">ชื่อ<input value="${esc(A.name)}" oninput="A.name=this.value" placeholder="${isC?'เช่น KTC Visa, Shopee Card':'เช่น SCB, TrueMoney'}"></label></div>
+  <label class="fl">ประเภท<select onchange="accType(this.value)">${Object.keys(ACC_T).map(k => `<option value="${k}" ${A.type===k?'selected':''}>${ACC_T[k]}</option>`).join('')}</select></label>
+  <label class="fl">${isC?'ยอดค้างชำระตอนเริ่มใช้แอป (บาท)':'ยอดเงินตอนเริ่มใช้แอป (บาท)'}<input inputmode="decimal" value="${openVal||''}" oninput="A.open=${isC?'-':''}parseAmt(this.value)"></label>
+  ${isC ? `
+  <div class="grid2"><label class="fl">ตัดรอบวันที่<input type="number" min="1" max="31" value="${c.cut}" oninput="A.card.cut=+this.value"></label><label class="fl">ครบชำระวันที่<input type="number" min="1" max="31" value="${c.due}" oninput="A.card.due=+this.value"></label></div>
+  <label class="fl">วงเงิน (บาท)<input inputmode="decimal" value="${c.limit||''}" oninput="A.card.limit=parseAmt(this.value)"></label>
+  <div class="seg">${[['cashback','เงินคืน %'],['points','สะสมแต้ม']].map(([k,l]) => `<button class="${c.rtype===k?'on':''}" onclick="A.card.rtype='${k}';renderAcc()">${l}</button>`).join('')}</div>
+  ${c.rtype==='points' ? `
+    <div class="grid2"><label class="fl">ใช้จ่ายกี่บาท = 1 แต้ม<input inputmode="decimal" value="${c.per}" oninput="A.card.per=parseAmt(this.value)"></label><label class="fl">1 แต้ม มีค่ากี่บาท<input inputmode="decimal" value="${c.pv}" oninput="A.card.pv=parseAmt(this.value)"></label></div>
+    <label class="fl">ตัวคูณพื้นฐาน (ปกติ = 1)<input inputmode="decimal" value="${c.base}" oninput="A.card.base=parseAmt(this.value)"></label>` : `
+    <label class="fl">เงินคืนพื้นฐาน (%)<input inputmode="decimal" value="${c.base}" oninput="A.card.base=parseAmt(this.value)"></label>`}
+  <label class="fl">เพดานเงินคืน/มูลค่าแต้มต่อรอบบิล (บาท, 0 = ไม่มีเพดาน)<input inputmode="decimal" value="${c.cap||''}" oninput="A.card.cap=parseAmt(this.value)"></label>
+  <div class="small mut" style="margin:6px 0">กฎพิเศษ (${c.rtype==='points'?'ตัวคูณแต้ม':'% เงินคืน'}) — ร้านใส่ได้หลายชื่อคั่นด้วย ,</div>
+  ${(c.rules||[]).map((r,i) => `<div class="rule">
+    <select onchange="A.card.rules[${i}].kind=this.value;A.card.rules[${i}].val='';renderAcc()"><option value="cat" ${r.kind==='cat'?'selected':''}>หมวด</option><option value="mer" ${r.kind==='mer'?'selected':''}>ร้าน</option></select>
+    ${r.kind==='cat' ? `<select onchange="A.card.rules[${i}].val=this.value"><option value="">—</option>${S.cats.filter(x=>x.type==='expense').map(x => `<option value="${x.id}" ${x.id===r.val?'selected':''}>${x.icon} ${esc(x.name)}</option>`).join('')}</select>` : `<input value="${esc(r.val)}" placeholder="Shopee, Lazada" oninput="A.card.rules[${i}].val=this.value">`}
+    <input inputmode="decimal" value="${r.rate}" placeholder="${c.rtype==='points'?'x':'%'}" oninput="A.card.rules[${i}].rate=parseAmt(this.value)">
+    <button onclick="A.card.rules.splice(${i},1);renderAcc()">✕</button></div>`).join('')}
+  <button class="btn sm ghost" onclick="A.card.rules.push({kind:'cat',val:'',rate:${c.rtype==='points'?2:5}});renderAcc()">+ เพิ่มกฎ</button>
+  <div class="note">ตัวอย่าง: หมวด ⛽ น้ำมัน 3% · ร้าน "Shopee" 5% · ร้าน "Lotus, Big C" 2%<br>ข้อมูลเงื่อนไขบัตรจริงให้ดูจากเว็บธนาคาร — โปรเปลี่ยนบ่อย</div>` : ''}
+  <div class="btns">${A.id?`<button class="btn ghost red" onclick="delAcc()">ลบ</button>`:''}${A.id && !isC && S.settings.defaultAcc!==A.id?`<button class="btn ghost" onclick="setS('defaultAcc','${A.id}');closeSheet();render()">ตั้งเป็นค่าเริ่มต้น</button>`:''}<button class="btn pri f1" onclick="saveAcc()">บันทึก</button></div>`);
+}
+function accType(t){
+  const wasC = A.type==='card';
+  A.type = t;
+  if (t==='card' && !A.card) A.card = {cut:25, due:10, limit:0, rtype:'cashback', base:0.5, per:25, pv:0.25, cap:0, rules:[]};
+  if (wasC !== (t==='card')) A.open = -(+A.open||0);
+  renderAcc();
+}
+function saveAcc(){
+  if (!A.name.trim()) return toast('ใส่ชื่อก่อน');
+  A.name = A.name.trim();
+  if (A.type!=='card') delete A.card; else A.card.rules = (A.card.rules||[]).filter(r => r.val && +r.rate>0);
+  if (A.id) { const i = S.accs.findIndex(a => a.id===A.id); S.accs[i] = A; } else { A.id = uid(); S.accs.push(A); }
+  save(); closeSheet(); render(); toast('บันทึกแล้ว');
+}
+function delAcc(){
+  const used = S.tx.some(x => x.acc===A.id || x.to===A.id);
+  if (used) return toast('มีรายการที่ใช้บัญชีนี้อยู่ — ลบรายการก่อน หรือเปลี่ยนชื่อแทน', 3500);
+  if (!confirm('ลบบัญชีนี้?')) return;
+  S.accs = S.accs.filter(a => a.id!==A.id);
+  if (S.settings.defaultAcc===A.id) S.settings.defaultAcc = (S.accs[0]||{}).id;
+  save(); closeSheet(); render();
+}
+
+/* ---------- bills ---------- */
+let BL = null;
+function openBill(id){
+  BL = id ? {...S.bills.find(b => b.id===id)} : {id:null, name:'', amount:'', day:1, acc:S.settings.defaultAcc, cat:'bill', active:true};
+  sheet(`<div class="sh-h"><b>${BL.id?'แก้ไข':'เพิ่ม'}บิลประจำ</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <label class="fl">ชื่อบิล<input value="${esc(BL.name)}" oninput="BL.name=this.value" placeholder="เช่น ค่าเน็ต AIS, Netflix, ค่าหอ"></label>
+  <div class="grid2"><label class="fl">ยอด (บาท)<input inputmode="decimal" value="${BL.amount}" oninput="BL.amount=parseAmt(this.value)"></label><label class="fl">ครบกำหนดวันที่<input type="number" min="1" max="31" value="${BL.day}" oninput="BL.day=+this.value"></label></div>
+  <label class="fl">จ่ายด้วย<select onchange="BL.acc=this.value">${accOpts(BL.acc)}</select></label>
+  <label class="fl">หมวด<select onchange="BL.cat=this.value">${S.cats.filter(c=>c.type==='expense').map(c => `<option value="${c.id}" ${c.id===BL.cat?'selected':''}>${c.icon} ${esc(c.name)}</option>`).join('')}</select></label>
+  <label class="chk"><input type="checkbox" ${BL.active!==false?'checked':''} onchange="BL.active=this.checked"> เปิดใช้งาน</label>
+  <div class="btns">${BL.id?`<button class="btn ghost red" onclick="delBill()">ลบ</button>`:''}<button class="btn pri f1" onclick="saveBill()">บันทึก</button></div>`);
+}
+function saveBill(){
+  if (!BL.name.trim() || !(+BL.amount>0)) return toast('ใส่ชื่อและยอด');
+  BL.day = Math.min(31, Math.max(1, +BL.day||1));
+  if (BL.id) S.bills[S.bills.findIndex(b => b.id===BL.id)] = BL; else { BL.id = uid(); S.bills.push(BL); }
+  save(); closeSheet(); render();
+}
+function delBill(){ if (!confirm('ลบบิลนี้?')) return; S.bills = S.bills.filter(b => b.id!==BL.id); save(); closeSheet(); render(); }
+function payBill(id){
+  const b = S.bills.find(x => x.id===id); if (!b) return;
+  const key = b.id + '|' + today().slice(0,7);
+  openForm({type:'expense', amount:String(b.amount), cat:b.cat, acc:b.acc, merchant:b.name, note:'บิลประจำ'});
+  F.after = rec => { S.paid[key] = rec.id; };
+}
+function payCard(id){
+  const a = acc(id); if (!a) return; const st = cardStatus(a);
+  const from = S.accs.find(x => x.type==='bank') || S.accs.find(x => x.type!=='card');
+  openForm({type:'transfer', amount: st.remain ? String(st.remain) : '', acc: from ? from.id : S.settings.defaultAcc, to:a.id, merchant:'จ่ายบัตร '+a.name});
+}
+
+/* ---------- categories ---------- */
+function addCat(){
+  const n = $('#nCatN').value.trim(), i = $('#nCatI').value.trim() || '🏷️', t = $('#nCatT').value;
+  if (!n) return toast('ใส่ชื่อหมวด');
+  S.cats.push({id:'c'+uid(), name:n, icon:i, type:t}); save(); render();
+}
+function delCat(id){
+  const c = cat(id);
+  if (S.tx.some(x => x.cat===id)) return toast(`หมวด "${c.name}" มีรายการอยู่ ลบไม่ได้`);
+  if (S.cats.filter(x => x.type===c.type).length<=1) return toast('ต้องมีอย่างน้อย 1 หมวด');
+  if (!confirm(`ลบหมวด "${c.name}"?`)) return;
+  S.cats = S.cats.filter(x => x.id!==id); save(); render();
+}
+
+/* ============================================================
+   AI / TEXT / VOICE / QR
+   ============================================================ */
+function hasAI(){ const s = S.settings; return s.ai==='claude' ? !!s.claudeKey : !!s.geminiKey; }
+function aiPrompt(kind){
+  const ex = S.cats.filter(c => c.type==='expense').map(c => `${c.id}=${c.name}`).join(', ');
+  const inc = S.cats.filter(c => c.type==='income').map(c => `${c.id}=${c.name}`).join(', ');
+  const accs = S.accs.map(a => a.name).join(', ');
+  return `คุณคือผู้ช่วยจดรายรับรายจ่ายภาษาไทย อ่าน${kind==='image'?'ภาพนี้ (สลิปโอนเงิน/ใบเสร็จ/ภาพหน้าจอออเดอร์)':'ข้อความของผู้ใช้'} แล้วแยกเป็นรายการธุรกรรม
+ตอบเป็น JSON อย่างเดียว รูปแบบ:
+{"items":[{"type":"expense|income","amount":number,"merchant":"ชื่อร้านหรือผู้รับ/ผู้โอน","category":"id","date":"YYYY-MM-DD","time":"HH:MM","note":"สรุปสั้นๆ","account":"ชื่อบัญชี/บัตรที่ใช้"}]}
+กฎ:
+- category รายจ่ายเลือกจาก: ${ex}
+- category รายรับเลือกจาก: ${inc}
+- account เลือกชื่อที่ใกล้ที่สุดจาก: ${accs} (ถ้าเดาไม่ได้ใส่ "")
+- สลิปโอนเงินที่ผู้ใช้เป็นผู้โอน = expense (merchant = ชื่อผู้รับ) · ถ้าผู้ใช้เป็นผู้รับ = income
+- ใบเสร็จ 1 ใบ = 1 รายการ ใช้ยอดสุทธิที่จ่ายจริง (หลังส่วนลด) ใส่ชื่อสินค้าหลักใน note
+- ภาพหน้าจอที่มีหลายออเดอร์/หลายสลิป ให้แยกเป็นหลายรายการ
+- ข้อความเช่น "ข้าว 50 กาแฟ 45" แยกเป็น 2 รายการ
+- amount เป็นบาท ค่าบวกเสมอ · ปี พ.ศ. ให้แปลงเป็น ค.ศ. (ลบ 543)
+- วันนี้คือ ${today()} ถ้าไม่ระบุวันใช้วันนี้ · "เมื่อวาน" = ${addD(today(),-1)} · ไม่รู้เวลาใส่ ""
+- ถ้าไม่พบธุรกรรม ตอบ {"items":[]}`;
+}
+async function callAI(prompt, img){
+  const s = S.settings;
+  if (s.ai==='claude') {
+    if (!s.claudeKey) throw new Error('ยังไม่ได้ใส่ Claude API key');
+    const content = [];
+    if (img) content.push({type:'image', source:{type:'base64', media_type:img.mime, data:img.data}});
+    content.push({type:'text', text:prompt});
+    const r = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:{'content-type':'application/json','x-api-key':s.claudeKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({model:s.claudeModel, max_tokens:2000, messages:[{role:'user', content}]})});
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error((j.error && j.error.message) || ('HTTP ' + r.status));
+    return (j.content||[]).map(c => c.text||'').join('');
+  }
+  if (!s.geminiKey) throw new Error('ยังไม่ได้ใส่ Gemini API key');
+  const parts = [{text:prompt}];
+  if (img) parts.push({inline_data:{mime_type:img.mime, data:img.data}});
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(s.geminiModel)}:generateContent?key=${encodeURIComponent(s.geminiKey)}`, {method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({contents:[{parts}], generationConfig:{temperature:0, responseMimeType:'application/json'}})});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error((j.error && j.error.message) || ('HTTP ' + r.status));
+  return ((j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || []).map(p => p.text||'').join('');
+}
+function parseJSON(t){ const a = t.indexOf('{'), b = t.lastIndexOf('}'); if (a<0||b<a) throw new Error('AI ตอบไม่เป็น JSON'); return JSON.parse(t.slice(a,b+1)); }
+function matchAcc(h){
+  h = (h||'').toLowerCase().trim(); if (!h) return '';
+  const a = S.accs.find(a => a.name.toLowerCase()===h) || S.accs.find(a => h.includes(a.name.toLowerCase()) || a.name.toLowerCase().includes(h));
+  return a ? a.id : '';
+}
+function fixDate(d){ if (!/^\d{4}-\d\d-\d\d$/.test(d||'')) return today(); let y = +d.slice(0,4); if (y>2400) y -= 543; const out = y + d.slice(4); return isNaN(pd(out)) ? today() : out; }
+function toDrafts(items, src){
+  return (items||[]).filter(i => +i.amount > 0).map(i => {
+    const type = i.type==='income' ? 'income' : 'expense';
+    const ct = S.cats.find(c => c.id===i.category && c.type===type);
+    return {id:uid(), type, amount:r2(+i.amount), cat: ct ? ct.id : guessCat((i.merchant||'')+' '+(i.note||''), type), acc: matchAcc(i.account) || S.settings.defaultAcc, to:'', merchant:String(i.merchant||'').slice(0,60), note:String(i.note||'').slice(0,120), date:fixDate(i.date), time: /^\d\d:\d\d/.test(i.time||'') ? i.time.slice(0,5) : '', src};
+  });
+}
+function guessCat(text, type){
+  const t = (text||'').toLowerCase();
+  if (type==='income') {
+    if (/เงินเดือน|salary/.test(t)) return 'salary';
+    if (/โบนัส|bonus/.test(t)) return 'bonus';
+    if (/ขาย/.test(t)) return 'sell';
+    if (/คืน|refund/.test(t)) return 'refund';
+    return S.cats.find(c => c.id==='oinc') ? 'oinc' : firstCat('income');
+  }
+  for (const k in KW) if (S.cats.find(c => c.id===k) && KW[k].split(' ').some(w => w && t.includes(w))) return k;
+  const byName = S.cats.find(c => c.type==='expense' && t.includes(c.name.toLowerCase()));
+  return byName ? byName.id : (S.cats.find(c => c.id==='other') ? 'other' : firstCat('expense'));
+}
+// ตัวแยกคำในเครื่อง (ไม่ต้องใช้ AI): "ข้าวมันไก่ 50, กาแฟ 45 เงินเดือน 30000"
+function localParse(text){
+  const out = [];
+  const re = /([^\d,\n]*?)\s*(\d[\d,]*(?:\.\d+)?)\s*(?:บาท|฿|บ\.)?/g;
+  let m;
+  const norm = text.replace(/[\n;]+/g, ',');
+  while ((m = re.exec(norm))) {
+    const amount = parseFloat(m[2].replace(/,/g,'')); if (!(amount>0)) continue;
+    let name = m[1].replace(/^[\s,]*(และ|กับ)?\s*/, '').replace(/\s*(ค่า)?\s*$/,'').trim();
+    const isInc = /เงินเดือน|โบนัส|ได้เงิน|รับเงิน|ขายได้|เงินเข้า|รายรับ|ได้คืน/.test(name);
+    const type = isInc ? 'income' : 'expense';
+    const d = /เมื่อวาน/.test(name) ? addD(today(),-1) : today();
+    name = name.replace(/เมื่อวาน(นี้)?|วันนี้/g,'').trim();
+    out.push({type, amount, merchant:name, category:'', date:d, time: d===today()?nowTime():'', note:''});
+  }
+  return toDrafts(out, 'text');
+}
+
+function openText(voice){
+  sheet(`<div class="sh-h"><b>${voice?'🎙️ พูดเพื่อจด':'⌨️ พิมพ์เพื่อจด'}</b><button class="x" onclick="stopVoice();closeSheet()">✕</button></div>
+  <textarea id="tIn" class="search" rows="3" placeholder="เช่น ข้าวมันไก่ 50, กาแฟ 65 จ่ายบัตร KTC, เมื่อวานค่าแท็กซี่ 120"></textarea>
+  <button class="mic" id="micB" onclick="toggleVoice()">🎙️</button>
+  <div class="small mut" id="vSt" style="text-align:center">${voice?'':'แตะไมค์เพื่อพูดแทนการพิมพ์ก็ได้'}</div>
+  <div class="btns"><button class="btn pri f1" onclick="submitText()">${hasAI()?'✨ ให้ AI จด':'จดเลย'}</button></div>
+  <div class="note">${hasAI()?'AI จะแยกหลายรายการ เดาหมวด/บัญชีให้ แล้วใส่ในถาดตรวจสอบ':'ยังไม่มี API key — ใช้ตัวแยกคำในเครื่อง (ชื่อ + ยอด) · ใส่ key ในตั้งค่าเพื่อให้ฉลาดขึ้น'}</div>`);
+  if (voice) setTimeout(toggleVoice, 200); else setTimeout(() => $('#tIn')?.focus(), 250);
+}
+let REC = null;
+function toggleVoice(){
+  if (REC) return stopVoice();
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { $('#vSt').textContent = 'เบราว์เซอร์นี้ไม่รองรับการฟังเสียง — ใช้ปุ่มไมค์บนคีย์บอร์ดมือถือพูดแทนได้'; $('#tIn').focus(); return; }
+  const r = new SR(); r.lang = 'th-TH'; r.interimResults = true; r.continuous = false;
+  const base = $('#tIn').value ? $('#tIn').value.trim() + ', ' : '';
+  r.onresult = e => { let t = ''; for (const res of e.results) t += res[0].transcript; $('#tIn').value = base + t; };
+  r.onerror = e => { $('#vSt').textContent = e.error==='not-allowed' ? 'ไม่ได้รับสิทธิ์ใช้ไมค์' : 'ฟังไม่ได้: ' + e.error; };
+  r.onend = () => { REC = null; const b = $('#micB'); if (b) b.classList.remove('on'); const st = $('#vSt'); if (st && st.textContent==='กำลังฟัง… พูดได้เลย') st.textContent = 'แตะไมค์เพื่อพูดต่อ หรือกดจด'; };
+  try { r.start(); REC = r; $('#micB').classList.add('on'); $('#vSt').textContent = 'กำลังฟัง… พูดได้เลย'; } catch(e) { $('#vSt').textContent = 'เริ่มไมค์ไม่ได้'; }
+}
+function stopVoice(){ if (REC) { try { REC.stop(); } catch(e) {} REC = null; } }
+async function submitText(){
+  stopVoice();
+  const t = ($('#tIn').value||'').trim(); if (!t) return toast('พิมพ์หรือพูดก่อน');
+  await processText(t);
+}
+async function processText(t){
+  let drafts = [];
+  if (hasAI()) {
+    busy('AI กำลังจด…');
+    try { drafts = toDrafts(parseJSON(await callAI(aiPrompt('text') + '\n\nข้อความ: ' + t)).items, 'ai'); }
+    catch(e) { toast('AI ใช้ไม่ได้ (' + e.message + ') — ใช้ตัวแยกคำในเครื่องแทน', 3500); drafts = localParse(t); }
+    busy();
+  } else drafts = localParse(t);
+  if (!drafts.length) return toast('ไม่เจอยอดเงินในข้อความ ลองใส่ตัวเลข เช่น "ข้าว 50"');
+  closeSheet();
+  if (drafts.length===1) { openForm(drafts[0]); return; }
+  S.tray.push(...drafts); save(); go('tray'); toast(`จดได้ ${drafts.length} รายการ — ตรวจแล้วกดยืนยัน`);
+}
+
+function fileToImg(file, max=1600){
+  return new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      let w = img.naturalWidth, h = img.naturalHeight; const k = Math.min(1, max/Math.max(w,h)); w = Math.round(w*k); h = Math.round(h*k);
+      const c = document.createElement('canvas'); c.width = w; c.height = h; const cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0,0,w,h); cx.drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url);
+      res({data: c.toDataURL('image/jpeg', .85).split(',')[1], mime:'image/jpeg', canvas:c, ctx:cx});
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('อ่านรูปไม่ได้')); };
+    img.src = url;
+  });
+}
+function onImgs(inp){ const files = [...(inp.files||[])]; inp.value = ''; if (files.length) processImages(files); }
+async function processImages(files){
+  closeSheet();
+  if (!hasAI()) { toast('การอ่านรูปต้องใช้ AI — ใส่ API key ในตั้งค่าก่อน', 3500); go('settings'); return; }
+  let all = [], fail = 0;
+  for (let i=0;i<files.length;i++) {
+    busy(`AI กำลังอ่านรูป ${i+1}/${files.length}…`);
+    try { const img = await fileToImg(files[i]); all.push(...toDrafts(parseJSON(await callAI(aiPrompt('image'), img)).items, 'ai')); }
+    catch(e) { fail++; console.warn(e); if (files.length===1) toast('อ่านไม่ได้: ' + e.message, 4000); }
+  }
+  busy();
+  if (!all.length) { if (files.length>1 || !fail) toast('ไม่พบยอดเงินในรูป', 3000); return; }
+  S.tray.push(...all); save(); go('tray');
+  toast(`AI จดได้ ${all.length} รายการ${fail?` (อ่านไม่ได้ ${fail} รูป)`:''}`, 3000);
+}
+async function testAI(){
+  busy('กำลังทดสอบ…');
+  try { const j = parseJSON(await callAI(aiPrompt('text') + '\n\nข้อความ: กาแฟ 65')); busy(); toast(j.items && j.items.length ? `✅ ใช้ได้ — ได้ "${j.items[0].merchant||''} ${j.items[0].amount}"` : '⚠️ ตอบได้แต่ไม่พบรายการ', 3500); }
+  catch(e) { busy(); toast('❌ ' + e.message, 5000); }
+}
+
+/* ---------- QR scan (Thai QR / PromptPay) ---------- */
+function tlv(s){ const o = {}; let i = 0; while (i+4 <= s.length) { const t = s.substr(i,2), l = parseInt(s.substr(i+2,2),10); if (isNaN(l)) break; o[t] = s.substr(i+4,l); i += 4+l; } return o; }
+async function onQR(inp){
+  const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return;
+  closeSheet(); busy('กำลังอ่าน QR…');
+  try {
+    await loadScript(LIB_JSQR);
+    const img = await fileToImg(f, 1400), d = img.ctx.getImageData(0,0,img.canvas.width,img.canvas.height);
+    const q = jsQR(d.data, d.width, d.height, {inversionAttempts:'attemptBoth'});
+    busy();
+    if (!q) return toast('ไม่เจอ QR ในรูป ลองถ่ายใกล้ขึ้น', 3000);
+    const o = tlv(q.data);
+    if (!o['00']) { openForm({note:'QR: '+q.data.slice(0,80)}); return; }
+    const amt = o['54'] ? parseFloat(o['54']) : '';
+    let name = o['59'] || '';
+    if (!name) { const pp = tlv(o['29']||o['30']||''); const id = pp['01']||pp['02']||pp['03']||''; name = id ? 'พร้อมเพย์ ' + id.replace(/^0066/,'0') : 'QR ร้านค้า'; }
+    openForm({type:'expense', amount: amt ? String(amt) : '', merchant:name.trim(), cat:guessCat(name,'expense'), note:'สแกน QR'});
+    toast(amt ? 'ได้ยอดจาก QR แล้ว — จดไว้ก่อนไปจ่ายในแอปธนาคาร' : 'QR ไม่มียอด ใส่ยอดเอง', 3000);
+  } catch(e) { busy(); toast(e.message, 3500); }
+}
+
+/* ---------- PromptPay payload ---------- */
+function crc16(s){ let c = 0xFFFF; for (let i=0;i<s.length;i++) { c ^= s.charCodeAt(i) << 8; for (let j=0;j<8;j++) c = (c & 0x8000) ? ((c<<1) ^ 0x1021) : (c<<1); c &= 0xFFFF; } return c.toString(16).toUpperCase().padStart(4,'0'); }
+function ppPayload(id, amount){
+  id = String(id||'').replace(/\D/g,'');
+  const f = (t,v) => t + String(v.length).padStart(2,'0') + v;
+  let tag, val;
+  if (id.length >= 15) { tag = '03'; val = id; }
+  else if (id.length === 13) { tag = '02'; val = id; }
+  else { tag = '01'; val = ('0000000000000' + id.replace(/^0/,'66')).slice(-13); }
+  let p = f('00','01') + f('01', amount ? '12' : '11') + f('29', f('00','A000000677010111') + f(tag,val)) + f('58','TH') + f('53','764') + (amount ? f('54', (+amount).toFixed(2)) : '');
+  p += '6304';
+  return p + crc16(p);
+}
+async function qrSvg(text){ await loadScript(LIB_QRGEN); const q = qrcode(0,'M'); q.addData(text); q.make(); return q.createSvgTag({cellSize:6, margin:2, scalable:true}); }
+
+/* ---------- split logic ---------- */
+function gShares(g, it){
+  if (it.custom) return it.custom;
+  const n = it.among.length || 1, base = Math.floor(it.amount/n*100)/100, r = {};
+  it.among.forEach((id,i) => r[id] = i===0 ? r2(it.amount - base*(n-1)) : base);
+  return r;
+}
+function gBal(g){
+  const b = {}; g.members.forEach(m => b[m.id] = 0);
+  for (const it of g.items) { b[it.payer] = (b[it.payer]||0) + it.amount; const sh = gShares(g,it); for (const k in sh) b[k] = (b[k]||0) - sh[k]; }
+  return b;
+}
+function settle(b){
+  const cr = [], de = [];
+  for (const k in b) { const v = r2(b[k]); if (v > 0.009) cr.push([k,v]); else if (v < -0.009) de.push([k,-v]); }
+  cr.sort((p,q) => q[1]-p[1]); de.sort((p,q) => q[1]-p[1]);
+  const out = []; let i = 0, j = 0;
+  while (i < de.length && j < cr.length) {
+    const x = r2(Math.min(de[i][1], cr[j][1]));
+    if (x > 0.009) out.push({from:de[i][0], to:cr[j][0], amt:x});
+    de[i][1] = r2(de[i][1]-x); cr[j][1] = r2(cr[j][1]-x);
+    if (de[i][1] < 0.01) i++; if (cr[j][1] < 0.01) j++;
+  }
+  return out;
+}
+function newGroup(){
+  sheet(`<div class="sh-h"><b>สร้างกลุ่มหารบิล</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <div class="row"><label class="fl" style="width:70px">ไอคอน<input id="gI" value="🧳" maxlength="4"></label><label class="fl f1">ชื่อกลุ่ม<input id="gN" placeholder="เช่น ทริปเขาใหญ่, ข้าวเย็นทีม"></label></div>
+  <label class="fl">เพื่อนในกลุ่ม (คั่นด้วย , ) — คุณ (${esc(S.settings.myName)}) อยู่ในกลุ่มอัตโนมัติ<input id="gM" placeholder="เอ, บี, ซี"></label>
+  <button class="btn pri" style="width:100%" onclick="saveGroup()">สร้าง</button>`);
+  setTimeout(() => $('#gN')?.focus(), 250);
+}
+function saveGroup(){
+  const n = $('#gN').value.trim(); if (!n) return toast('ใส่ชื่อกลุ่ม');
+  const ms = $('#gM').value.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+  const g = {id:uid(), name:n, icon:$('#gI').value||'🧳', members:[{id:'me', name:S.settings.myName||'ฉัน', pp:S.settings.promptpay||''}, ...ms.map(x => ({id:uid(), name:x, pp:''}))], items:[], created:Date.now()};
+  S.groups.push(g); save(); closeSheet(); go('group', {id:g.id});
+}
+function addMember(gid){ const n = prompt('ชื่อเพื่อน'); if (!n||!n.trim()) return; const g = S.groups.find(x => x.id===gid); g.members.push({id:uid(), name:n.trim(), pp:''}); save(); render(); }
+function editMember(gid, mid){
+  const g = S.groups.find(x => x.id===gid), m = g.members.find(x => x.id===mid);
+  sheet(`<div class="sh-h"><b>${esc(m.name)}</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <label class="fl">ชื่อ<input id="mN" value="${esc(m.name)}"></label>
+  <label class="fl">พร้อมเพย์ (เบอร์ / เลขบัตร ปชช.) — ใช้สร้าง QR ให้คนอื่นโอนให้คนนี้<input id="mP" inputmode="numeric" value="${esc(m.pp||'')}"></label>
+  <div class="btns">${mid!=='me'?`<button class="btn ghost red" onclick="delMember('${gid}','${mid}')">ลบ</button>`:''}<button class="btn pri f1" onclick="saveMember('${gid}','${mid}')">บันทึก</button></div>`);
+}
+function saveMember(gid, mid){
+  const g = S.groups.find(x => x.id===gid), m = g.members.find(x => x.id===mid);
+  m.name = $('#mN').value.trim() || m.name; m.pp = $('#mP').value.replace(/\D/g,'');
+  if (mid==='me' && m.pp && !S.settings.promptpay) S.settings.promptpay = m.pp;
+  save(); closeSheet(); render();
+}
+function delMember(gid, mid){
+  const g = S.groups.find(x => x.id===gid);
+  if (g.items.some(i => i.payer===mid || i.among.includes(mid))) return toast('คนนี้มีรายการอยู่ ลบไม่ได้');
+  g.members = g.members.filter(m => m.id!==mid); save(); closeSheet(); render();
+}
+function delGroup(gid){ if (!confirm('ลบกลุ่มนี้ทั้งหมด?')) return; S.groups = S.groups.filter(g => g.id!==gid); save(); go('split'); }
+
+let GI = null;
+function openGItem(gid, iid){
+  const g = S.groups.find(x => x.id===gid), ex = iid ? g.items.find(i => i.id===iid) : null;
+  GI = ex ? JSON.parse(JSON.stringify(ex)) : {id:null, title:'', amount:'', payer:'me', among:g.members.map(m => m.id), custom:null, rec:false, cat:'food', acc:S.settings.defaultAcc};
+  GI.gid = gid;
+  renderGItem();
+}
+function renderGItem(){
+  const g = S.groups.find(x => x.id===GI.gid), amt = parseAmt(GI.amount);
+  const sh = GI.custom ? null : (GI.among.length ? amt/GI.among.length : 0);
+  const cSum = GI.custom ? Object.values(GI.custom).reduce((s,v) => s + (+v||0), 0) : 0;
+  const sc = $('#sheet').scrollTop;
+  sheet(`<div class="sh-h"><b>${GI.id?'แก้ไข':'เพิ่ม'}ค่าใช้จ่าย</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <label class="fl">รายการ<input value="${esc(GI.title)}" oninput="GI.title=this.value" placeholder="เช่น ค่าที่พัก, หมูกระทะ"></label>
+  <div class="amtw"><span>฿</span><input inputmode="decimal" value="${esc(GI.amount)}" placeholder="0" onchange="GI.amount=this.value;renderGItem()"></div>
+  <label class="fl">ใครจ่าย<select onchange="GI.payer=this.value">${g.members.map(m => `<option value="${m.id}" ${m.id===GI.payer?'selected':''}>${esc(m.name)}</option>`).join('')}</select></label>
+  ${GI.settle ? '' : `
+  <div class="seg"><button class="${!GI.custom?'on':''}" onclick="GI.custom=null;renderGItem()">หารเท่ากัน</button><button class="${GI.custom?'on':''}" onclick="gCustom()">กำหนดเอง</button></div>
+  ${g.members.map(m => GI.custom
+    ? `<div class="row" style="margin-bottom:6px"><span class="f1">${esc(m.name)}</span><input class="search" style="width:120px;margin:0" inputmode="decimal" value="${GI.custom[m.id]||''}" oninput="GI.custom['${m.id}']=parseAmt(this.value);if(!GI.custom['${m.id}'])delete GI.custom['${m.id}']" onchange="renderGItem()"></div>`
+    : `<label class="chk"><input type="checkbox" ${GI.among.includes(m.id)?'checked':''} onchange="gTog('${m.id}',this.checked)"> <span class="f1">${esc(m.name)}</span><span class="mut">${GI.among.includes(m.id)&&sh?fmt(sh):''}</span></label>`).join('')}
+  ${GI.custom ? `<div class="small ${Math.abs(cSum-amt)>0.01?'red':'grn'}">รวมที่กำหนด ${fmt(cSum)} / ${fmt(amt)}</div>` : ''}
+  <label class="chk" style="margin-top:8px"><input type="checkbox" ${GI.rec?'checked':''} onchange="GI.rec=this.checked;renderGItem()"> จดส่วนของฉันลงรายจ่ายส่วนตัวด้วย</label>
+  ${GI.rec ? `<div class="grid2"><label class="fl">หมวด<select onchange="GI.cat=this.value">${S.cats.filter(c=>c.type==='expense').map(c => `<option value="${c.id}" ${c.id===GI.cat?'selected':''}>${c.icon} ${esc(c.name)}</option>`).join('')}</select></label><label class="fl">จ่ายด้วย<select onchange="GI.acc=this.value">${accOpts(GI.acc)}</select></label></div>` : ''}`}
+  <div class="btns">${GI.id?`<button class="btn ghost red" onclick="delGItem()">ลบ</button>`:''}<button class="btn pri f1" onclick="saveGItem()">บันทึก</button></div>`);
+  $('#sheet').scrollTop = sc;
+}
+function gTog(id, on){ GI.among = on ? [...new Set([...GI.among, id])] : GI.among.filter(x => x!==id); renderGItem(); }
+function gCustom(){ const g = S.groups.find(x => x.id===GI.gid), amt = parseAmt(GI.amount), n = GI.among.length || 1; GI.custom = {}; GI.among.forEach(id => GI.custom[id] = r2(amt/n)); renderGItem(); }
+function saveGItem(){
+  const g = S.groups.find(x => x.id===GI.gid), amt = parseAmt(GI.amount);
+  if (!(amt>0)) return toast('ใส่ยอดก่อน');
+  if (!GI.settle && !GI.title.trim()) GI.title = 'ค่าใช้จ่าย';
+  if (GI.custom) { const cs = Object.values(GI.custom).reduce((s,v) => s+(+v||0), 0); if (Math.abs(cs-amt) > 0.01) return toast('ยอดที่กำหนดรวมไม่เท่ายอดจริง'); GI.among = Object.keys(GI.custom); }
+  if (!GI.among.length) return toast('เลือกคนที่หารอย่างน้อย 1 คน');
+  const it = {id:GI.id||uid(), title:GI.title.trim(), amount:amt, payer:GI.payer, among:GI.among, custom:GI.custom, settle:!!GI.settle, date:GI.date||today()};
+  // จดส่วนของฉันลงรายจ่าย
+  if (!GI.settle && GI.rec && !GI.txId) {
+    const mine = gShares(g, it).me || 0;
+    if (mine > 0) { const tx = {id:uid(), type:'expense', amount:r2(mine), cat:GI.cat, acc:GI.acc, to:'', merchant:it.title, note:'หารบิล: '+g.name, date:today(), time:nowTime(), created:Date.now()}; S.tx.push(tx); it.txId = tx.id; }
+  } else if (GI.txId) it.txId = GI.txId;
+  it.rec = GI.rec;
+  if (GI.id) g.items[g.items.findIndex(i => i.id===GI.id)] = it; else g.items.push(it);
+  save(); closeSheet(); render();
+}
+function delGItem(){ const g = S.groups.find(x => x.id===GI.gid); if (!confirm('ลบรายการนี้?')) return; g.items = g.items.filter(i => i.id!==GI.id); save(); closeSheet(); render(); }
+function markSettled(gid, from, to, amt){
+  const g = S.groups.find(x => x.id===gid), mn = id => g.members.find(m => m.id===id).name;
+  if (!confirm(`${mn(from)} โอนให้ ${mn(to)} ${fmt(amt)} แล้ว?`)) return;
+  g.items.push({id:uid(), title:'โอนคืน', amount:amt, payer:from, among:[to], custom:null, settle:true, date:today()});
+  save(); render(); toast('บันทึกการโอนแล้ว');
+}
+async function showPayQR(gid, from, to, amt){
+  const g = S.groups.find(x => x.id===gid), fm = g.members.find(m => m.id===from), tm = g.members.find(m => m.id===to);
+  const pp = tm.pp || (to==='me' ? S.settings.promptpay : '');
+  if (!pp) { toast(`ยังไม่มีพร้อมเพย์ของ ${tm.name} — แตะชื่อเพื่อเพิ่ม`, 3000); return editMember(gid, to); }
+  busy('กำลังสร้าง QR…');
+  try {
+    const svg = await qrSvg(ppPayload(pp, amt)); busy();
+    sheet(`<div class="sh-h"><b>QR พร้อมเพย์</b><button class="x" onclick="closeSheet()">✕</button></div>
+    <div style="text-align:center"><div><b>${esc(fm.name)}</b> โอนให้ <b>${esc(tm.name)}</b></div><div class="big grn" style="margin:4px 0">${fmt(amt)}</div></div>
+    <div class="qr">${svg}</div>
+    <div class="small mut" style="text-align:center">สแกนด้วยแอปธนาคารใดก็ได้ · พร้อมเพย์ ${esc(pp.replace(/(\d{3})(\d{3})(\d+)/,'$1-$2-$3'))}</div>
+    <div class="note">ถ้าจะส่งให้เพื่อน: แคปหน้าจอนี้ส่งใน LINE ได้เลย</div>`);
+  } catch(e) { busy(); toast(e.message, 3500); }
+}
+async function shareGroup(gid){
+  const g = S.groups.find(x => x.id===gid), mn = id => (g.members.find(m => m.id===id)||{}).name||'?';
+  const st = settle(gBal(g)), paid = {};
+  g.items.filter(i => !i.settle).forEach(i => paid[i.payer] = (paid[i.payer]||0) + i.amount);
+  const lines = [`🧾 ${g.name}`, `รวม ${fmt(sum(g.items.filter(i=>!i.settle)))}`, '', 'รายการ:', ...g.items.filter(i=>!i.settle).map(i => `• ${i.title} ${fmt(i.amount)} (${mn(i.payer)} จ่าย)`), '', 'ต้องโอน:', ...(st.length ? st.map(s => { const pp = (g.members.find(m=>m.id===s.to)||{}).pp || (s.to==='me'?S.settings.promptpay:''); return `➡️ ${mn(s.from)} → ${mn(s.to)} ${fmt(s.amt)}${pp?' (พร้อมเพย์ '+pp+')':''}`; }) : ['✅ เคลียร์ครบแล้ว'])];
+  const text = lines.join('\n');
+  try { if (navigator.share) { await navigator.share({text}); return; } } catch(e) { if (e.name==='AbortError') return; }
+  try { await navigator.clipboard.writeText(text); toast('คัดลอกสรุปแล้ว — วางใน LINE ได้เลย'); }
+  catch(e) { sheet(`<div class="sh-h"><b>สรุป</b><button class="x" onclick="closeSheet()">✕</button></div><textarea class="search" rows="12">${esc(text)}</textarea>`); }
+}
+
+/* ---------- data ---------- */
+function exportCSV(){
+  const h = ['วันที่','เวลา','ประเภท','ยอด','หมวด','บัญชี','ไปบัญชี','ร้าน/ผู้รับ','โน้ต','เงินคืนจากบัตร'];
+  const q = v => '"' + String(v ?? '').replace(/"/g,'""') + '"';
+  const rows = sortTx(S.tx).map(x => [x.date, x.time, TL[x.type], x.amount, x.type==='transfer'?'':cat(x.cat).name, (acc(x.acc)||{}).name, x.to?(acc(x.to)||{}).name:'', x.merchant, x.note, txReward(x)||''].map(q).join(','));
+  download(`jodnoi-${today()}.csv`, '\ufeff' + [h.map(q).join(','), ...rows].join('\n'), 'text/csv;charset=utf-8');
+}
+function backup(){ const c = JSON.parse(JSON.stringify(S)); download(`jodnoi-backup-${today()}.json`, JSON.stringify(c), 'application/json'); toast('สำรองแล้ว — ไฟล์นี้มี API key อยู่ด้วย เก็บให้ดี', 3500); }
+function onRestore(inp){
+  const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try { const d = JSON.parse(r.result); if (!d.v || !Array.isArray(d.tx)) throw 0; if (!confirm(`กู้คืน ${d.tx.length} รายการ? ข้อมูลปัจจุบันจะถูกแทนที่`)) return; S = d; S.settings = {...defaults().settings, ...S.settings}; ['cats','accs','tx','tray','bills','groups'].forEach(k => { if (!Array.isArray(S[k])) S[k] = defaults()[k]; }); S.paid = S.paid || {}; save(); go('home'); toast('กู้คืนแล้ว'); }
+    catch(e) { toast('ไฟล์ไม่ถูกต้อง'); }
+  };
+  r.readAsText(f);
+}
+function resetAll(){ if (!confirm('ลบข้อมูลทั้งหมดในเครื่องนี้? (กู้คืนไม่ได้ ถ้าไม่ได้สำรองไว้)')) return; if (!confirm('แน่ใจนะ?')) return; S = defaults(); save(); go('home'); }
+
+/* ---------- install ---------- */
+let DEFER = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); DEFER = e; });
+function installHelp(){
+  if (DEFER) { DEFER.prompt(); DEFER.userChoice.finally(() => DEFER = null); return; }
+  sheet(`<div class="sh-h"><b>📲 ติดตั้งเป็นแอป</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <div class="card"><b>iPhone / iPad (Safari)</b><ol class="small" style="padding-left:18px;margin:6px 0 0"><li>เปิดลิงก์นี้ใน <b>Safari</b></li><li>กดปุ่ม <b>แชร์</b> (สี่เหลี่ยมมีลูกศรขึ้น)</li><li>เลือก <b>เพิ่มไปยังหน้าจอโฮม</b></li></ol></div>
+  <div class="card"><b>Android (Chrome)</b><ol class="small" style="padding-left:18px;margin:6px 0 0"><li>กดเมนู ⋮ มุมขวาบน</li><li>เลือก <b>ติดตั้งแอป</b> / <b>เพิ่มลงในหน้าจอหลัก</b></li><li>ติดตั้งแล้ว: แชร์รูปสลิปจากแอปธนาคาร → เลือก <b>mininote</b> ได้เลย</li></ol></div>`);
+}
+
+/* ---------- boot ---------- */
+async function boot(){
+  applyTheme(); render();
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+  const p = new URLSearchParams(location.search);
+  if (p.has('shared') || p.has('text')) {
+    history.replaceState(null, '', location.pathname);
+    const n = +p.get('shared') || 0, text = p.get('text') || '';
+    if (n > 0 && 'caches' in window) {
+      const c = await caches.open('jodnoi-share'), files = [];
+      for (let i=0;i<n;i++) { const r = await c.match('./shared/' + i); if (r) { const b = await r.blob(); files.push(new File([b], 'shared'+i, {type:b.type||'image/jpeg'})); } }
+      for (const k of await c.keys()) await c.delete(k);
+      if (files.length) return processImages(files);
+    }
+    if (text) { openText(false); $('#tIn').value = text; }
+  }
+}
+boot();
+</script>
+</body>
+</html>
