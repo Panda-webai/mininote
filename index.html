@@ -226,6 +226,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opac
 const KEY = 'jodnoi.v1';
 const LIB_QRGEN = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
 const LIB_JSQR  = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+const LIB_TESS  = 'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.min.js';
 
 const CATS0 = [
   ['food','อาหาร','🍜','expense'],['drink','เครื่องดื่ม','☕','expense'],['grocery','ของใช้/ซูเปอร์','🛒','expense'],
@@ -257,7 +258,7 @@ const ACC_T = {cash:'เงินสด', bank:'บัญชีธนาคา�
 function defaults(){
   return {
     v:1,
-    settings:{budget:15000,cycleDay:1,defaultAcc:'cash',ai:'gemini',geminiKey:'',geminiModel:'gemini-2.5-flash',
+    settings:{budget:15000,cycleDay:1,defaultAcc:'cash',ai:'ocr',geminiKey:'',geminiModel:'gemini-2.5-flash',
       claudeKey:'',claudeModel:'claude-haiku-4-5',myName:'ฉัน',promptpay:'',hideBal:false,theme:'auto'},
     cats:CATS0.map(c=>({...c})),
     accs:[{id:'cash',name:'เงินสด',type:'cash',icon:'💵',open:0},{id:'bank',name:'บัญชีธนาคาร',type:'bank',icon:'🏦',open:0},{id:'wallet',name:'e-Wallet',type:'wallet',icon:'📱',open:0}],
@@ -520,7 +521,7 @@ V.tray = () => {
   <div class="list">${S.tray.length ? S.tray.map(d => {
     const c = cat(d.cat), a = acc(d.acc);
     return `<div class="it"><span class="emo" onclick="editDraft('${d.id}')">${c.icon}</span>
-      <div class="f1" onclick="editDraft('${d.id}')"><div class="t">${esc(d.merchant||c.name)}</div><div class="s">${thD(d.date)}${d.time?' '+d.time:''} · ${esc(a?a.name:'?')} · ${c.name}${dup(d)?' · <span class="amb">⚠️ อาจซ้ำ</span>':''}</div></div>
+      <div class="f1" onclick="editDraft('${d.id}')"><div class="t">${esc(d.merchant||c.name)}</div><div class="s">${thD(d.date)}${d.time?' '+d.time:''} · ${esc(a?a.name:'?')} · ${c.name}${dup(d)?' · <span class="amb">⚠️ อาจซ้ำ</span>':''}${!(d.amount>0)?' · <span class="red">ยังไม่มียอด</span>':''}${d.src==='ocr'?' · OCR':''}</div></div>
       <div class="r"><b class="${d.type==='income'?'grn':''}">${d.type==='income'?'+':'-'}${fmt(d.amount).replace('-','')}</b><div style="margin-top:4px"><button class="btn sm ghost" onclick="dropDraft('${d.id}')">✕</button> <button class="btn sm pri" onclick="okDraft('${d.id}')">✓</button></div></div></div>`;
   }).join('') : '<div class="empty">ไม่มีรายการรอตรวจ 🎉</div>'}</div>
   ${S.tray.length>1 ? `<button class="btn pri" style="width:100%" onclick="okAllDrafts()">✓ ยืนยันทั้งหมด (${S.tray.length})</button>` : ''}`;
@@ -607,8 +608,10 @@ V.settings = () => {
     <label class="fl">บัญชีเริ่มต้นตอนจด<select onchange="setS('defaultAcc',this.value)">${accOpts}</select></label>
   </div>
   <div class="card"><h3>🤖 AI จดให้</h3>
-    <div class="seg">${[['gemini','Google Gemini'],['claude','Claude']].map(([k,l]) => `<button class="${s.ai===k?'on':''}" onclick="setS('ai','${k}');render()">${l}</button>`).join('')}</div>
-    ${s.ai==='gemini' ? `
+    <div class="seg">${[['ocr','ในเครื่อง (ฟรี)'],['gemini','Gemini'],['claude','Claude']].map(([k,l]) => `<button class="${s.ai===k?'on':''}" onclick="setS('ai','${k}');render()">${l}</button>`).join('')}</div>
+    ${s.ai==='ocr' ? `
+      <div class="note">📷 อ่านสลิปด้วย <b>OCR ในเครื่อง</b> (Tesseract) — ฟรี ไม่ต้องใช้ key รูปไม่ออกจากมือถือ<br>ครั้งแรกโหลดตัวอ่านภาษาไทยประมาณ 8MB จากนั้นใช้ offline ได้<br>อ่านสลิปโอนเงินได้ดี · ใบเสร็จ/หน้าจอหลายออเดอร์ อาจต้องแก้เองบ้าง</div>
+      <div class="small mut" id="ocrSt">${TW?'✅ ตัวอ่านพร้อมใช้แล้ว':''}</div>` : s.ai==='gemini' ? `
       <label class="fl">Gemini API key<input ${setIn('geminiKey','password','autocomplete="off" placeholder="AIza..."')}></label>
       <label class="fl">Model<input ${setIn('geminiModel')}></label>
       <div class="note">ขอ key ฟรีได้ที่ <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></div>` : `
@@ -616,7 +619,7 @@ V.settings = () => {
       <label class="fl">Model<input ${setIn('claudeModel')}></label>
       <div class="note">ขอ key ได้ที่ <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a> (คิดตามการใช้งาน)</div>`}
     <div class="note">🔒 key เก็บในเครื่องนี้เท่านั้น รูปสลิปส่งตรงไปผู้ให้บริการ AI ที่เลือก ไม่ผ่านเซิร์ฟเวอร์อื่น · ไม่มี key ก็ยังพิมพ์/พูดจดได้ (ใช้ตัวแยกคำในเครื่อง)</div>
-    <button class="btn ghost" onclick="testAI()">ทดสอบ AI</button>
+    <button class="btn ghost" onclick="testAI()">${s.ai==='ocr'?'⬇️ โหลดตัวอ่านไว้ใช้ offline':'ทดสอบ AI'}</button>
   </div>
   <div class="card"><h3>👥 หารบิล</h3>
     <label class="fl">ชื่อของฉัน<input ${setIn('myName')}></label>
@@ -686,7 +689,7 @@ function openAdd(){
     <button onclick="closeSheet();openForm({})"><span class="e">✍️</span><b>กรอกเอง</b><span>ใส่ยอด เลือกหมวด</span></button>
     <button class="wide" onclick="closeSheet();openForm({type:'transfer'})"><span class="e">↔️</span><b>โอนระหว่างบัญชี / จ่ายบัตรเครดิต</b></button>
   </div>
-  ${hasAI() ? '' : `<div class="note" style="margin-top:12px">ยังไม่ได้ใส่ API key — การอ่านรูปต้องใช้ AI · <a onclick="closeSheet();go('settings')">ตั้งค่า AI</a></div>`}`);
+  ${hasAI() ? '' : `<div class="note" style="margin-top:12px">📷 อ่านรูปด้วย OCR ในเครื่อง (ฟรี) · อยากให้แม่นขึ้นใส่ API key ได้ที่ <a onclick="closeSheet();go('settings')">ตั้งค่า</a></div>`}`);
 }
 function pick(id){ const el = $('#'+id); el.value = ''; el.click(); }
 
@@ -713,6 +716,7 @@ function renderForm(){
   <label class="fl">โน้ต<input value="${esc(d.note)}" oninput="F.d.note=this.value"></label>
   <div class="grid2"><label class="fl">วันที่<input type="date" value="${d.date}" onchange="F.d.date=this.value||today()"></label><label class="fl">เวลา<input type="time" value="${d.time||''}" onchange="F.d.time=this.value"></label></div>
   <div id="fHint" class="hint"></div>
+  ${d.raw ? `<details class="note"><summary>ข้อความที่ OCR อ่านได้ (ไว้คัดลอกชื่อ/ยอด)</summary><div style="white-space:pre-wrap;margin-top:6px;user-select:text">${esc(d.raw)}</div></details>` : ''}
   <div class="btns">${F.mode!=='new'?`<button class="btn ghost red" onclick="fDel()">${F.mode==='draft'?'ทิ้ง':'ลบ'}</button>`:''}<button class="btn pri f1" onclick="saveForm()">บันทึก</button></div>
   ${F.mode==='new' ? `<button class="btn ghost" style="width:100%;margin-top:8px" onclick="saveForm(true)">บันทึก แล้วจดต่อ</button>` : ''}`);
   $('#sheet').scrollTop = sc;
@@ -763,8 +767,8 @@ function fDel(){
 function editTx(id){ const x = S.tx.find(t => t.id===id); if (x) openForm({...x}, 'edit', id); }
 function editDraft(id){ const x = S.tray.find(t => t.id===id); if (x) openForm({...x}, 'draft', id); }
 function dropDraft(id){ S.tray = S.tray.filter(x => x.id!==id); save(); render(); }
-function okDraft(id){ const d = S.tray.find(x => x.id===id); if (!d) return; if (!(d.amount>0)) return editDraft(id); S.tx.push({...d, id:uid(), created:Date.now()}); S.tray = S.tray.filter(x => x.id!==id); save(); render(); toast('บันทึกแล้ว'); }
-function okAllDrafts(){ const ok = S.tray.filter(d => d.amount>0); ok.forEach(d => S.tx.push({...d, id:uid(), created:Date.now()})); S.tray = S.tray.filter(d => !(d.amount>0)); save(); render(); toast(`บันทึก ${ok.length} รายการ`); }
+function okDraft(id){ const d = S.tray.find(x => x.id===id); if (!d) return; if (!(d.amount>0)) return editDraft(id); const {raw, ...keep} = d; S.tx.push({...keep, id:uid(), created:Date.now()}); S.tray = S.tray.filter(x => x.id!==id); save(); render(); toast('บันทึกแล้ว'); }
+function okAllDrafts(){ const ok = S.tray.filter(d => d.amount>0); ok.forEach(({raw, ...d}) => S.tx.push({...d, id:uid(), created:Date.now()})); S.tray = S.tray.filter(d => !(d.amount>0)); save(); render(); toast(`บันทึก ${ok.length} รายการ`); }
 
 /* ---------- advisor ---------- */
 let ADV = {amt:'', cat:'food', mer:''};
@@ -890,7 +894,7 @@ function delCat(id){
 /* ============================================================
    AI / TEXT / VOICE / QR
    ============================================================ */
-function hasAI(){ const s = S.settings; return s.ai==='claude' ? !!s.claudeKey : !!s.geminiKey; }
+function hasAI(){ const s = S.settings; return s.ai==='claude' ? !!s.claudeKey : s.ai==='gemini' ? !!s.geminiKey : false; }
 function aiPrompt(kind){
   const ex = S.cats.filter(c => c.type==='expense').map(c => `${c.id}=${c.name}`).join(', ');
   const inc = S.cats.filter(c => c.type==='income').map(c => `${c.id}=${c.name}`).join(', ');
@@ -1032,19 +1036,165 @@ function fileToImg(file, max=1600){
 function onImgs(inp){ const files = [...(inp.files||[])]; inp.value = ''; if (files.length) processImages(files); }
 async function processImages(files){
   closeSheet();
-  if (!hasAI()) { toast('การอ่านรูปต้องใช้ AI — ใส่ API key ในตั้งค่าก่อน', 3500); go('settings'); return; }
-  let all = [], fail = 0;
+  const useAI = hasAI();
+  let all = [], fail = 0, viaOcr = 0;
   for (let i=0;i<files.length;i++) {
-    busy(`AI กำลังอ่านรูป ${i+1}/${files.length}…`);
-    try { const img = await fileToImg(files[i]); all.push(...toDrafts(parseJSON(await callAI(aiPrompt('image'), img)).items, 'ai')); }
-    catch(e) { fail++; console.warn(e); if (files.length===1) toast('อ่านไม่ได้: ' + e.message, 4000); }
+    const tag = files.length>1 ? ` ${i+1}/${files.length}` : '';
+    try {
+      if (useAI) {
+        busy(`AI กำลังอ่านรูป${tag}…`);
+        try { const img = await fileToImg(files[i]); all.push(...toDrafts(parseJSON(await callAI(aiPrompt('image'), img)).items, 'ai')); continue; }
+        catch(e) { console.warn('AI failed → OCR', e); toast('AI ใช้ไม่ได้ (' + e.message + ') — อ่านด้วย OCR ในเครื่องแทน', 3000); }
+      }
+      const d = await ocrFile(files[i], tag);
+      if (d) { all.push(d); viaOcr++; } else fail++;
+    } catch(e) { fail++; console.warn(e); if (files.length===1) toast('อ่านไม่ได้: ' + e.message, 4000); }
   }
   busy();
-  if (!all.length) { if (files.length>1 || !fail) toast('ไม่พบยอดเงินในรูป', 3000); return; }
+  if (!all.length) { if (files.length>1 || !fail) toast('ไม่พบยอดเงินในรูป', 3000); else if (fail) toast('อ่านรูปไม่ออก ลองถ่ายให้ตรงและชัดขึ้น', 3500); return; }
   S.tray.push(...all); save(); go('tray');
-  toast(`AI จดได้ ${all.length} รายการ${fail?` (อ่านไม่ได้ ${fail} รูป)`:''}`, 3000);
+  const miss = all.filter(d => !(d.amount>0)).length;
+  toast(`จดได้ ${all.length} รายการ${viaOcr?' (OCR)':''}${miss?` · ${miss} รายการหายอดไม่เจอ แตะเพื่อใส่เอง`:''}${fail?` · อ่านไม่ได้ ${fail} รูป`:''}`, 3500);
 }
+
+/* ---------- OCR ในเครื่อง (Tesseract.js — ฟรี, ไม่ต้องใช้ API) ---------- */
+let TW = null, TWp = null, OCR_TAG = '';
+function ocrLog(m){
+  const p = Math.round((m.progress||0)*100);
+  const st = {'loading tesseract core':'กำลังโหลดตัวอ่าน','initializing tesseract':'กำลังเตรียมตัวอ่าน','loading language traineddata':'กำลังโหลดภาษาไทย (ครั้งแรกเท่านั้น)','initializing api':'กำลังเตรียมตัวอ่าน','recognizing text':'กำลังอ่านสลิป'}[m.status];
+  if (st && $('#busy').classList.contains('on')) busy(`${st}${OCR_TAG}… ${p}%`);
+  const el = $('#ocrSt'); if (el && st) el.textContent = `${st} ${p}%`;
+}
+async function ocrWorker(){
+  if (TW) return TW;
+  if (!TWp) TWp = (async () => {
+    await loadScript(LIB_TESS);
+    const w = await Tesseract.createWorker(['tha','eng'], 1, {logger: ocrLog});
+    await w.setParameters({tessedit_pageseg_mode:'4', preserve_interword_spaces:'1'});
+    TW = w; return w;
+  })().catch(e => { TWp = null; throw new Error('โหลดตัวอ่าน OCR ไม่ได้ (ต้องต่อเน็ตครั้งแรก)'); });
+  return TWp;
+}
+// เตรียมรูป: ขาวดำ + ขยายให้ตัวหนังสือใหญ่พอ + กลับสีถ้าเป็นโหมดมืด
+function ocrPrep(file){
+  return new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      let w = img.naturalWidth, h = img.naturalHeight;
+      const k = Math.min(2400/Math.max(w,h), Math.max(1, 1400/w)); w = Math.round(w*k); h = Math.round(h*k);
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const cx = c.getContext('2d', {willReadFrequently:true}); cx.fillStyle = '#fff'; cx.fillRect(0,0,w,h); cx.drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url);
+      const d = cx.getImageData(0,0,w,h), px = d.data; let tot = 0;
+      for (let i=0;i<px.length;i+=4) { const g = px[i]*.299 + px[i+1]*.587 + px[i+2]*.114; px[i] = px[i+1] = px[i+2] = g; tot += g; }
+      if (tot/(px.length/4) < 110) for (let i=0;i<px.length;i+=4) px[i] = px[i+1] = px[i+2] = 255 - px[i];
+      cx.putImageData(d,0,0);
+      res(c);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('อ่านรูปไม่ได้')); };
+    img.src = url;
+  });
+}
+async function ocrFile(file, tag=''){
+  OCR_TAG = tag; busy(`กำลังเตรียมตัวอ่าน${tag}…`);
+  const w = await ocrWorker();
+  busy(`กำลังอ่านสลิป${tag}…`);
+  const c = await ocrPrep(file);
+  const {data} = await w.recognize(c);
+  const text = (data && data.text) || '';
+  if (text.replace(/\s/g,'').length < 4) return null;
+  return parseSlip(text);
+}
+
+const TH_MON = {'มค':1,'กพ':2,'มีค':3,'เมย':4,'พค':5,'มิย':6,'กค':7,'สค':8,'กย':9,'ตค':10,'พย':11,'ธค':12,
+  'มกราคม':1,'กุมภาพันธ์':2,'มีนาคม':3,'เมษายน':4,'พฤษภาคม':5,'มิถุนายน':6,'กรกฎาคม':7,'สิงหาคม':8,'กันยายน':9,'ตุลาคม':10,'พฤศจิกายน':11,'ธันวาคม':12,
+  'jan':1,'feb':2,'mar':3,'apr':4,'may':5,'jun':6,'jul':7,'aug':8,'sep':9,'oct':10,'nov':11,'dec':12};
+const BANKS = [/กสิกร|kbank|k\s?plus|make by k/i, /ไทยพาณิชย์|scb|scb\s?easy/i, /กรุงเทพ|bangkok bank|bualuang/i, /กรุงไทย|krungthai|ktb|เป๋าตัง|paotang/i, /กรุงศรี|krungsri|kma/i, /ttb|ทีทีบี|ทหารไทย|ธนชาต/i, /ออมสิน|gsb|mymo/i, /ธ\.?ก\.?ส|baac/i, /truemoney|ทรูมันนี่|true money/i, /shopee\s?pay/i, /line\s?pay|rabbit/i, /uob/i, /kkp|เกียรตินาคิน/i, /cimb/i];
+function normOcr(t){
+  return t.replace(/[๐-๙]/g, d => '๐๑๒๓๔๕๖๗๘๙'.indexOf(d))
+    .replace(/\u0E4D\u0E32/g, 'ำ')                 // ํา → ำ
+    .replace(/(\d)\s*([,.])\s*(\d)/g, '$1$2$3')     // 1 , 350 . 00 → 1,350.00
+    .replace(/[|]/g, ' ');
+}
+function ocrAmounts(line){
+  const out = []; const re = /(?<![\d/])(\d{1,3}(?:,\d{3})+|\d+)[.,](\d{2})(?![\d:/])/g; let m;
+  while ((m = re.exec(line))) { const v = parseFloat(m[1].replace(/,/g,'') + '.' + m[2]); if (v > 0 && v < 10000000) out.push(v); }
+  return out;
+}
+function ocrDate(t){
+  const low = t.toLowerCase();
+  // 28 ก.ย. 69 · 28 กันยายน 2569 · 28 Sep 2026
+  const re = /(\d{1,2})\s*([ก-๙.\s]{2,12}?|[a-z]{3,9})\.?\s*(\d{4}|\d{2})(?!\d)/g; let m;
+  while ((m = re.exec(low))) {
+    const key = m[2].replace(/[.\s]/g,''), mon = TH_MON[key] || TH_MON[key.replace(/[\u0E31\u0E38\u0E39\u0E47-\u0E4E]/g,'')];
+    if (!mon) continue;
+    let y = +m[3]; if (y < 100) y += (y > 40 ? 2500 : 2000); if (y > 2400) y -= 543;
+    const d = +m[1]; if (d<1 || d>31 || y<2000 || y>2100) continue;
+    return y + '-' + pad(mon) + '-' + pad(d);
+  }
+  const n = low.match(/(\d{1,2})[/-](\d{1,2})[/-](\d{4}|\d{2})(?!\d)/);
+  if (n) { let y = +n[3]; if (y < 100) y += (y > 40 ? 2500 : 2000); if (y > 2400) y -= 543; const mo = +n[2], d = +n[1]; if (mo>=1 && mo<=12 && d>=1 && d<=31) return y + '-' + pad(mo) + '-' + pad(d); }
+  return '';
+}
+function cleanName(s){
+  return (s||'').replace(/x{2,}[\dx-]*|\d{3}-\d-\d{5}-\d|\b\d[\d-]{6,}\b/gi,'').replace(/[^\p{L}\p{M}\d .&'()\-+@]/gu,' ').replace(/\s{2,}/g,' ').trim().slice(0,50);
+}
+function parseSlip(raw){
+  const text = normOcr(raw), lines = text.split('\n').map(l => l.trim()).filter(Boolean), low = text.toLowerCase();
+  const NEG = /ค่าธรรมเนียม|fee|ทอน|change|เงินสด|cash|vat|ภาษี|ส่วนลด|discount|คงเหลือ|balance|เลขที่|ref|รหัส|point|แต้ม|ก่อน\s?vat/i;
+  const KEYS = [[/สุทธิ|ยอดชำระ|ชำระเงิน|ที่ต้องชำระ|net|grand\s?total|amount\s?paid/i, 3], [/จำนวนเงิน|จำนวน|ยอดเงิน|ยอดโอน|amount/i, 2], [/รวม|total|ยอดรวม/i, 1]];
+  // ยอดเงิน
+  let best = null;
+  lines.forEach((l, i) => {
+    for (const [re, pr] of KEYS) {
+      if (!re.test(l) || NEG.test(l)) continue;
+      let a = ocrAmounts(l); if (!a.length && lines[i+1] && !NEG.test(lines[i+1])) a = ocrAmounts(lines[i+1]);
+      if (a.length && (!best || pr > best.pr || (pr === best.pr))) best = {v: a[a.length-1], pr};
+      break;
+    }
+  });
+  let amount = best ? best.v : 0;
+  if (!amount) { const all = lines.filter(l => !NEG.test(l)).flatMap(ocrAmounts); if (all.length) amount = Math.max(...all); }
+  // เวลา
+  const tm = text.match(/(?<!\d)([01]?\d|2[0-3])[:.]([0-5]\d)(?:[:.][0-5]\d)?\s*(?:น\.?|น|am|pm)?/i);
+  const time = tm && /[:]/.test(tm[0]) ? pad(+tm[1]) + ':' + tm[2] : '';
+  // ผู้รับ / ร้าน
+  let merchant = '';
+  const toIdx = lines.findIndex(l => /^(ไปยัง|ไปที่|ถึง|ผู้รับ|to\b|บัญชีปลายทาง|รับเงิน)/i.test(l));
+  if (toIdx >= 0) { const rest = cleanName(lines[toIdx].replace(/^(ไปยัง|ไปที่|ถึง|ผู้รับ|to|บัญชีปลายทาง|รับเงิน)\s*:?/i,'')); merchant = rest.length > 2 ? rest : cleanName(lines[toIdx+1]||''); }
+  if (!merchant) {
+    for (const k in KW) { const w = KW[k].split(' ').find(w => w.length>2 && /[a-z0-9]/.test(w) && !BANKS.some(b => b.test(w)) && low.includes(w)); if (w) { const l = lines.find(l => l.toLowerCase().includes(w)); merchant = cleanName(l); break; } }
+  }
+  if (!merchant) {
+    const my = (S.settings.myName||'').trim();
+    const names = lines.filter(l => /(^|\s)(นาย|นาง|น\.ส\.|นางสาว|ด\.ช|ด\.ญ|บจก|บริษัท|หจก|ร้าน|mr\.?|mrs\.?|ms\.?|miss)\s?\S/i.test(l)).map(cleanName).filter(n => n.length>2 && !(my.length>1 && n.includes(my)));
+    merchant = names.length >= 2 ? names[1] : names[0] || '';
+  }
+  if (!merchant) {
+    const SKIP = /สำเร็จ|successful|success|slip|ใบเสร็จ|receipt|tax|invoice|ใบกำกับ|โอนเงิน|transfer|วันที่|date|\d{2}:\d{2}|จำนวน|amount/i;
+    const l = lines.find(l => cleanName(l).replace(/[\d\s.-]/g,'').length >= 3 && !SKIP.test(l) && !BANKS.some(b => b.test(l)));
+    merchant = cleanName(l);
+  }
+  // บัญชีที่จ่าย: ธนาคารที่ปรากฏก่อนสุดในสลิป = ฝั่งผู้โอน
+  let accId = '', pos = Infinity;
+  for (const a of S.accs) {
+    const an = a.name.toLowerCase(); let p = low.indexOf(an);
+    for (const b of BANKS) if (b.test(an)) { const m = low.match(b); if (m && m.index < (p<0?Infinity:p)) p = m.index; }
+    if (p >= 0 && p < pos) { pos = p; accId = a.id; }
+  }
+  const isInc = /รับเงินสำเร็จ|เงินเข้า|received/i.test(low) && !/โอนเงินสำเร็จ|ชำระเงินสำเร็จ/.test(low);
+  const type = isInc ? 'income' : 'expense';
+  const date = ocrDate(text) || today();
+  return {id:uid(), type, amount: r2(amount), cat: (c => c!=='other' ? c : guessCat(low, type))(guessCat(merchant, type)), acc: accId || S.settings.defaultAcc, to:'', merchant, note:'อ่านด้วย OCR — ตรวจยอดอีกครั้ง', date, time, src:'ocr', raw: raw.slice(0, 1500)};
+}
+
 async function testAI(){
+  if (S.settings.ai==='ocr') {
+    busy('กำลังโหลดตัวอ่าน OCR…');
+    try { await ocrWorker(); busy(); toast('✅ ตัวอ่านพร้อมแล้ว ใช้ offline ได้', 3000); const el = $('#ocrSt'); if (el) el.textContent = '✅ ตัวอ่านพร้อมใช้แล้ว'; }
+    catch(e) { busy(); toast('❌ ' + e.message, 4000); }
+    return;
+  }
   busy('กำลังทดสอบ…');
   try { const j = parseJSON(await callAI(aiPrompt('text') + '\n\nข้อความ: กาแฟ 65')); busy(); toast(j.items && j.items.length ? `✅ ใช้ได้ — ได้ "${j.items[0].merchant||''} ${j.items[0].amount}"` : '⚠️ ตอบได้แต่ไม่พบรายการ', 3500); }
   catch(e) { busy(); toast('❌ ' + e.message, 5000); }
